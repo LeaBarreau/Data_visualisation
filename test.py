@@ -3,13 +3,6 @@ import folium
 import streamlit as st
 import matplotlib.pyplot as plt
 
-[theme]
-primaryColor="#d33682"
-backgroundColor="#002b36"
-secondaryBackgroundColor="#586e75"
-textColor="#fafafa"
-font="sans serif"
-
 st.title("Etude des accidents de vélos depuis 2005")
 st.write("Bienvenue !")
 
