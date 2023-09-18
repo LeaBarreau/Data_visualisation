@@ -1,3 +1,5 @@
-import streamlit as st 
+import streamlit as st
 
-st.title("Bonjour, nouvelle aplication")
+st.title("Ma première application Streamlit")
+st.write("Bienvenue sur ma première application Streamlit !")
+
