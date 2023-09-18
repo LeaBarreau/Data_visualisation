@@ -1,6 +1,5 @@
 import pandas 
-import folium 
-import openpyxl
+import folium
 import streamlit as st
 
 st.title("Ma première application Streamlit")
