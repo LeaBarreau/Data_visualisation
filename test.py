@@ -126,79 +126,91 @@ def import_data():
 
 data = import_data()
 
-with st.sidebar:
-        Gender_filter = st.multiselect(label='Selectionnez un genre',
-                            options=data['sexe'].unique(),
-                            default=data['sexe'].unique())
-        region_filter = st.multiselect(label='Selectionnez une région',
-                            options=data['region'].unique(),
-                            default=data['region'].unique())
+# Créez un bouton de navigation pour chaque page
+page = st.sidebar.selectbox("Choisissez une page", ["Statistiques descriptives", "Graphiques interactifs", "Machine Learning"])
 
-df_filtre = data.query('region == @region_filter & sexe == @Gender_filter')
+if page == "Statistiques descriptives":
+    st.title("page accueil")
 
-Q1,Q2 = st.columns(2)
+elif page == "Graphiques interactifs":
+    with st.sidebar:
+            Gender_filter = st.multiselect(label='Selectionnez un genre',
+                                options=data['sexe'].unique(),
+                                default=data['sexe'].unique())
+            region_filter = st.multiselect(label='Selectionnez une région',
+                                options=data['region'].unique(),
+                                default=data['region'].unique())
 
-with Q1:
-    df1 = df_filtre.groupby(by = ['an','grav'])['Num_Acc'].count().reset_index()
-    df1 = df1.rename(columns={'Num_Acc': 'nb_accidents'})
-    fig1 = px.bar(df1,
-                            x='an',
-                            y='nb_accidents',
-                            color='grav',
-                            title='Nombre d\'accidents par années')
-    fig1.update_layout(title = {'x' : 0.5},
-                                    plot_bgcolor = "rgba(0,0,0,0)",
-                                    xaxis =(dict(showgrid = False)),
-                                    yaxis =(dict(showgrid = False)))
-    st.plotly_chart(fig1,use_container_width=True, figsize=(10, 6))
-st.text("    ")
+    df_filtre = data.query('region == @region_filter & sexe == @Gender_filter')
 
-with Q2:
-    df2 = df_filtre.groupby(by = ['grav'])['Num_Acc'].count().reset_index()
-    df2 = df2.rename(columns={'Num_Acc': 'nb_accidents'})
-    fig2 = px.pie(df2,names='grav',values='nb_accidents',title='Type d\'accients')
-    fig2.update_layout(title = {'x':0.5}, plot_bgcolor = "rgba(0,0,0,0)")
-    st.plotly_chart(fig2,use_container_width=True)
+    Q1,Q2 = st.columns(2)
 
-df_filtre = df_filtre.loc[df_filtre['age']<=100]
-df3 = df_filtre.groupby(by = ['age','trajet'])['Num_Acc'].count().reset_index()
-df3 = df3.rename(columns={'Num_Acc': 'nb_accidents'})
-fig3 = px.line(df3,x='age',y='nb_accidents',color='trajet',title='Nombre d\'accidents par rapport à l\'âge')
-fig3.update_layout(title = {'x':0.5}, plot_bgcolor = "rgba(0,0,0,0)")
-st.plotly_chart(fig3,use_container_width=True)
+    with Q1:
+        df1 = df_filtre.groupby(by = ['an','grav'])['Num_Acc'].count().reset_index()
+        df1 = df1.rename(columns={'Num_Acc': 'nb_accidents'})
+        fig1 = px.bar(df1,
+                                x='an',
+                                y='nb_accidents',
+                                color='grav',
+                                title='Nombre d\'accidents par années')
+        fig1.update_layout(title = {'x' : 0.5},
+                                        plot_bgcolor = "rgba(0,0,0,0)",
+                                        xaxis =(dict(showgrid = False)),
+                                        yaxis =(dict(showgrid = False)))
+        st.plotly_chart(fig1,use_container_width=True, figsize=(10, 6))
+    st.text("    ")
 
-# Supprimez les lignes avec des valeurs NaN dans les colonnes 'lat' et 'long'
-data_carte = df_filtre.dropna(subset=['lat', 'long'])
+    with Q2:
+        df2 = df_filtre.groupby(by = ['grav'])['Num_Acc'].count().reset_index()
+        df2 = df2.rename(columns={'Num_Acc': 'nb_accidents'})
+        fig2 = px.pie(df2,names='grav',values='nb_accidents',title='Type d\'accients')
+        fig2.update_layout(title = {'x':0.5}, plot_bgcolor = "rgba(0,0,0,0)")
+        st.plotly_chart(fig2,use_container_width=True)
 
-# Créez un curseur pour sélectionner l'année
-selected_year = st.slider("Sélectionnez une année", min_value=2015, max_value=2021, value=2019)
+    df_filtre = df_filtre.loc[df_filtre['age']<=100]
+    df3 = df_filtre.groupby(by = ['age','trajet'])['Num_Acc'].count().reset_index()
+    df3 = df3.rename(columns={'Num_Acc': 'nb_accidents'})
+    fig3 = px.line(df3,x='age',y='nb_accidents',color='trajet',title='Nombre d\'accidents par rapport à l\'âge')
+    fig3.update_layout(title = {'x':0.5}, plot_bgcolor = "rgba(0,0,0,0)")
+    st.plotly_chart(fig3,use_container_width=True)
 
-# Créez un menu déroulant pour sélectionner le mois
-selected_month = st.selectbox("Sélectionnez un mois", ["janvier", "fevrier", "mars", "avril", "mai", "juin", "juillet", "aout", "septembre", "octobre", "novembre", "decembre"])
+    # Supprimez les lignes avec des valeurs NaN dans les colonnes 'lat' et 'long'
+    data_carte = df_filtre.dropna(subset=['lat', 'long'])
 
-# Filtrez les données en fonction de l'année et du mois sélectionnés
-data_filtered = data_carte[(data_carte['an'] == selected_year) & (data_carte['mois'] == selected_month)]
+    # Créez un curseur pour sélectionner l'année
+    selected_year = st.slider("Sélectionnez une année", min_value=2015, max_value=2021, value=2019)
 
-# Créez une carte centrée sur la France
-m = folium.Map(location=[46.603354, 1.888334], zoom_start=6)
+    # Créez un menu déroulant pour sélectionner le mois
+    selected_month = st.selectbox("Sélectionnez un mois", ["janvier", "fevrier", "mars", "avril", "mai", "juin", "juillet", "aout", "septembre", "octobre", "novembre", "decembre"])
 
-# Parcourez les lignes du DataFrame pour ajouter des marqueurs sur la carte
-for index, row in data_filtered.iterrows():
-    latitude, longitude = row['lat'], row['long']
-    gravite = row['grav']
+    # Filtrez les données en fonction de l'année et du mois sélectionnés
+    data_filtered = data_carte[(data_carte['an'] == selected_year) & (data_carte['mois'] == selected_month)]
 
-    # Détermination de la couleur du marqueur en fonction de la gravité
-    if gravite == 'Tué':
-        marker_color = 'red'
-    elif gravite == 'Indemne':
-        marker_color = 'green'
-    elif gravite == 'Blessé léger':
-        marker_color = 'orange'
-    elif gravite == 'Blessé hospitalisé':
-        marker_color = 'blue'
+    # Créez une carte centrée sur la France
+    m = folium.Map(location=[46.603354, 1.888334], zoom_start=6)
 
-    # Ajout d'un marqueur à la carte
-    folium.Marker([latitude, longitude], icon=folium.Icon(icon='circle', color=marker_color)).add_to(m)
+    # Parcourez les lignes du DataFrame pour ajouter des marqueurs sur la carte
+    for index, row in data_filtered.iterrows():
+        latitude, longitude = row['lat'], row['long']
+        gravite = row['grav']
 
-# Affichez la carte dans Streamlit
-st_folium(m)
+        # Détermination de la couleur du marqueur en fonction de la gravité
+        if gravite == 'Tué':
+            marker_color = 'red'
+        elif gravite == 'Indemne':
+            marker_color = 'green'
+        elif gravite == 'Blessé léger':
+            marker_color = 'orange'
+        elif gravite == 'Blessé hospitalisé':
+            marker_color = 'blue'
+
+        # Ajout d'un marqueur à la carte
+        folium.Marker([latitude, longitude], icon=folium.Icon(icon='circle', color=marker_color)).add_to(m)
+
+    # Affichez la carte dans Streamlit
+    st_folium(m)
+
+elif page == "Machine Learning":
+    st.title("Page 2")
+    st.write("C'est la deuxième page.")
+
