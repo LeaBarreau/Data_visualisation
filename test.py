@@ -3,6 +3,8 @@ import folium
 import streamlit as st
 import matplotlib.pyplot as plt
 import plotly.express as px
+import streamlit as st
+from streamlit_folium import st_folium
 
 # Définissez la largeur de la page Streamlit
 st.set_page_config(layout="wide")
@@ -14,7 +16,7 @@ st.write("Bienvenue !")
 @st.cache_data
 def import_data():
     data = pandas.read_excel(r"accidentsVelo.xlsx", decimal=",")  
-    #data = data.loc[data['an'] >= 2015]
+    data = data.loc[data['an'] >= 2015]
     # Créer une correspondance département - région
     departement_region = {
         1: 'Auvergne-Rhône-Alpes',
@@ -168,14 +170,20 @@ st.plotly_chart(fig3,use_container_width=True)
 # Supprimez les lignes avec des valeurs NaN dans les colonnes 'lat' et 'long'
 data_carte = df_filtre.dropna(subset=['lat', 'long'])
 
-# Filtrez les données pour l'année 2021 et le mois de janvier
-data2021 = data_carte[(data_carte['an'] == 2021) & (data_carte['mois'] == "janvier")]
+# Créez un curseur pour sélectionner l'année
+selected_year = st.slider("Sélectionnez une année", min_value=2015, max_value=2021, value=2019)
+
+# Créez un menu déroulant pour sélectionner le mois
+selected_month = st.selectbox("Sélectionnez un mois", ["janvier", "fevrier", "mars", "avril", "mai", "juin", "juillet", "aout", "septembre", "octobre", "novembre", "decembre"])
+
+# Filtrez les données en fonction de l'année et du mois sélectionnés
+data_filtered = data_carte[(data_carte['an'] == selected_year) & (data_carte['mois'] == selected_month)]
 
 # Créez une carte centrée sur la France
 m = folium.Map(location=[46.603354, 1.888334], zoom_start=6)
 
 # Parcourez les lignes du DataFrame pour ajouter des marqueurs sur la carte
-for index, row in data2021.iterrows():
+for index, row in data_filtered.iterrows():
     latitude, longitude = row['lat'], row['long']
     gravite = row['grav']
 
@@ -193,4 +201,4 @@ for index, row in data2021.iterrows():
     folium.Marker([latitude, longitude], icon=folium.Icon(icon='circle', color=marker_color)).add_to(m)
 
 # Affichez la carte dans Streamlit
-st.write(m)
+st_folium(m)
