@@ -134,11 +134,12 @@ df_filtre = data.query('region == @region_filter & sexe == @Gender_filter')
 Q1,Q2 = st.columns(2,gap='large')
 
 with Q1:
-    df1 = df_filtre.groupby(by = ['an'])['Num_Acc'].count().reset_index()
+    df1 = df_filtre.groupby(by = ['an','grav'])['Num_Acc'].count().reset_index()
     df1 = df1.rename(columns={'Num_Acc': 'nb_accidents'})
     fig_CTR_by_campaign = px.bar(df1,
                             x='an',
                             y='nb_accidents',
+                            color='grav',
                             title='Nombre d\'accidents par année')
     fig_CTR_by_campaign.update_layout(title = {'x' : 0.5},
                                     plot_bgcolor = "rgba(0,0,0,0)",
@@ -146,9 +147,12 @@ with Q1:
                                     yaxis =(dict(showgrid = False)))
     st.plotly_chart(fig_CTR_by_campaign,use_container_width=True)
 st.text("    ")
+
 with Q2:
     df2 = df_filtre.groupby(by = ['grav'])['Num_Acc'].count().reset_index()
     df2 = df2.rename(columns={'Num_Acc': 'nb_accidents'})
     fig_spend_by_gender = px.pie(df2,names='grav',values='nb_accidents',title='Type d\'accients')
     fig_spend_by_gender.update_layout(title = {'x':0.5}, plot_bgcolor = "rgba(0,0,0,0)")
     st.plotly_chart(fig_spend_by_gender,use_container_width=True)
+
+R1,R2,R3 = st.columns(3,gap='large')
