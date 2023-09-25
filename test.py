@@ -161,6 +161,36 @@ with Q2:
 df_filtre = df_filtre.loc[df_filtre['age']<=100]
 df3 = df_filtre.groupby(by = ['age','trajet'])['Num_Acc'].count().reset_index()
 df3 = df3.rename(columns={'Num_Acc': 'nb_accidents'})
-fig3 = px.line(df3,x='age',y='nb_accidents',color='trajet')
+fig3 = px.line(df3,x='age',y='nb_accidents',color='trajet',title='Nombre d\'accidents par rapport à l\'âge')
 fig3.update_layout(title = {'x':0.5}, plot_bgcolor = "rgba(0,0,0,0)")
 st.plotly_chart(fig3,use_container_width=True)
+
+# Supprimez les lignes avec des valeurs NaN dans les colonnes 'lat' et 'long'
+data_carte = df_filtre.dropna(subset=['lat', 'long'])
+
+# Filtrez les données pour l'année 2021 et le mois de janvier
+data2021 = data_carte[(data_carte['an'] == 2021) & (data_carte['mois'] == "janvier")]
+
+# Créez une carte centrée sur la France
+m = folium.Map(location=[46.603354, 1.888334], zoom_start=6)
+
+# Parcourez les lignes du DataFrame pour ajouter des marqueurs sur la carte
+for index, row in data2021.iterrows():
+    latitude, longitude = row['lat'], row['long']
+    gravite = row['grav']
+
+    # Détermination de la couleur du marqueur en fonction de la gravité
+    if gravite == 'Tué':
+        marker_color = 'red'
+    elif gravite == 'Indemne':
+        marker_color = 'green'
+    elif gravite == 'Blessé léger':
+        marker_color = 'orange'
+    elif gravite == 'Blessé hospitalisé':
+        marker_color = 'blue'
+
+    # Ajout d'un marqueur à la carte
+    folium.Marker([latitude, longitude], icon=folium.Icon(icon='circle', color=marker_color)).add_to(m)
+
+# Affichez la carte dans Streamlit
+st.write(m)
