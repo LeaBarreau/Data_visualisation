@@ -4,14 +4,17 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import plotly.express as px
 
+# Définissez la largeur de la page Streamlit
+st.set_page_config(layout="wide")
+
 st.title("Etude des accidents de vélos depuis 2005")
 st.write("Bienvenue !")
 
 # Utilisez pd.read_excel() pour lire le fichier Excel dans un DataFrame
-@st.cache
+@st.cache_data
 def import_data():
     data = pandas.read_excel(r"accidentsVelo.xlsx", decimal=",")  
-    data = data.loc[data['an'] >= 2015]
+    #data = data.loc[data['an'] >= 2015]
     # Créer une correspondance département - région
     departement_region = {
         1: 'Auvergne-Rhône-Alpes',
@@ -131,28 +134,33 @@ with st.sidebar:
 
 df_filtre = data.query('region == @region_filter & sexe == @Gender_filter')
 
-Q1,Q2 = st.columns(2,gap='large')
+Q1,Q2 = st.columns(2)
 
 with Q1:
     df1 = df_filtre.groupby(by = ['an','grav'])['Num_Acc'].count().reset_index()
     df1 = df1.rename(columns={'Num_Acc': 'nb_accidents'})
-    fig_CTR_by_campaign = px.bar(df1,
+    fig1 = px.bar(df1,
                             x='an',
                             y='nb_accidents',
                             color='grav',
-                            title='Nombre d\'accidents par année')
-    fig_CTR_by_campaign.update_layout(title = {'x' : 0.5},
+                            title='Nombre d\'accidents par années')
+    fig1.update_layout(title = {'x' : 0.5},
                                     plot_bgcolor = "rgba(0,0,0,0)",
                                     xaxis =(dict(showgrid = False)),
                                     yaxis =(dict(showgrid = False)))
-    st.plotly_chart(fig_CTR_by_campaign,use_container_width=True)
+    st.plotly_chart(fig1,use_container_width=True, figsize=(10, 6))
 st.text("    ")
 
 with Q2:
     df2 = df_filtre.groupby(by = ['grav'])['Num_Acc'].count().reset_index()
     df2 = df2.rename(columns={'Num_Acc': 'nb_accidents'})
-    fig_spend_by_gender = px.pie(df2,names='grav',values='nb_accidents',title='Type d\'accients')
-    fig_spend_by_gender.update_layout(title = {'x':0.5}, plot_bgcolor = "rgba(0,0,0,0)")
-    st.plotly_chart(fig_spend_by_gender,use_container_width=True)
+    fig2 = px.pie(df2,names='grav',values='nb_accidents',title='Type d\'accients')
+    fig2.update_layout(title = {'x':0.5}, plot_bgcolor = "rgba(0,0,0,0)")
+    st.plotly_chart(fig2,use_container_width=True)
 
-R1,R2,R3 = st.columns(3,gap='large')
+df_filtre = df_filtre.loc[df_filtre['age']<=100]
+df3 = df_filtre.groupby(by = ['age','trajet'])['Num_Acc'].count().reset_index()
+df3 = df3.rename(columns={'Num_Acc': 'nb_accidents'})
+fig3 = px.line(df3,x='age',y='nb_accidents',color='trajet')
+fig3.update_layout(title = {'x':0.5}, plot_bgcolor = "rgba(0,0,0,0)")
+st.plotly_chart(fig3,use_container_width=True)
