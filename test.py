@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 import streamlit as st
 from streamlit_folium import st_folium
+from wordcloud import WordCloud
 
 # Définissez la largeur de la page Streamlit
 st.set_page_config(layout="wide")
@@ -167,8 +168,8 @@ elif page == "Graphiques interactifs":
         fig2.update_layout(title = {'x':0.5}, plot_bgcolor = "rgba(0,0,0,0)")
         st.plotly_chart(fig2,use_container_width=True)
 
-    df_filtre = df_filtre.loc[df_filtre['age']<=100]
-    df3 = df_filtre.groupby(by = ['age','trajet'])['Num_Acc'].count().reset_index()
+    df3 = df_filtre.loc[df_filtre['age']<=100]
+    df3 = df3.groupby(by = ['age','trajet'])['Num_Acc'].count().reset_index()
     df3 = df3.rename(columns={'Num_Acc': 'nb_accidents'})
     fig3 = px.line(df3,x='age',y='nb_accidents',color='trajet',title='Nombre d\'accidents par rapport à l\'âge')
     fig3.update_layout(title = {'x':0.5}, plot_bgcolor = "rgba(0,0,0,0)")
@@ -209,6 +210,27 @@ elif page == "Graphiques interactifs":
 
     # Affichez la carte dans Streamlit
     st_folium(m)
+
+    df4 = df_filtre.groupby(by = ['mois','grav'])['Num_Acc'].count().reset_index()
+    df4 = df4.rename(columns={'Num_Acc': 'nb_accidents'})
+    # Liste des mois dans l'ordre de l'arrivée
+    ordre_des_mois = ["janvier", "fevrier", "mars", "avril", "mai", "juin", "juillet", "aout", "septembre", "octobre", "novembre", "decembre"]
+    df4.columns = ['mois', 'grav', 'nb_accidents']
+    df4['mois'] = pandas.Categorical(df4['mois'], categories=ordre_des_mois, ordered=True)
+    df4 = df4.sort_values(by='mois')
+    fig4 = px.line(df4,x='mois',y='nb_accidents',color='grav',title='Saisonnalité des accidents par rapport à la gravité')
+    fig4.update_layout(title = {'x':0.5}, plot_bgcolor = "rgba(0,0,0,0)")
+    st.plotly_chart(fig4,use_container_width=True)
+
+    #TEST TEST TEST
+    # Créez une liste de mots
+    mots = ["Python", "Data", "Science", "Nuage", "Mot", "Visualisation", "OpenAI", "Intelligence", "Artificielle"]
+    # Convertissez la liste de mots en une chaîne de caractères
+    texte = ' '.join(mots)
+    # Créez un nuage de mots
+    nuage_de_mots = WordCloud(width=800, height=400, background_color='white').generate(texte)
+    # Créez une figure Matplotlib pour le nuage de mots
+    st.image(nuage_de_mots.to_image(), use_container_width=True)
 
 elif page == "Machine Learning":
     st.title("Page 2")
