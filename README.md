@@ -1,4 +1,4 @@
-# Auteurs :    Lauraly Montuelle, Léa Barreau
+# Auteurs : Lauraly Montuelle, Léa Barreau
 # M2 Actuariat 
 # Projet Data Visualisation
 
