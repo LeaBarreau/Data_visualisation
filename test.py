@@ -138,14 +138,11 @@ if page == "Statistiques descriptives":
 
 elif page == "Graphiques interactifs":
     with st.sidebar:
-            Gender_filter = st.multiselect(label='Selectionnez un genre',
-                                options=data['sexe'].unique(),
-                                default=data['sexe'].unique())
             region_filter = st.multiselect(label='Selectionnez une région',
                                 options=data['region'].unique(),
                                 default=data['region'].unique())
 
-    df_filtre = data.query('region == @region_filter & sexe == @Gender_filter')
+    df_filtre = data.query('region == @region_filter')
 
     Q1,Q2 = st.columns(2)
 
@@ -171,6 +168,7 @@ elif page == "Graphiques interactifs":
         fig2.update_layout(title = {'x':0.5}, plot_bgcolor = "rgba(0,0,0,0)")
         st.plotly_chart(fig2,use_container_width=True)
 
+    ##NB D'ACCIDENTS SELON L'AGE ET LE TRAJET
     df3 = df_filtre.loc[df_filtre['age']<=100]
     df3 = df3.groupby(by = ['age','trajet'])['Num_Acc'].count().reset_index()
     df3 = df3.rename(columns={'Num_Acc': 'nb_accidents'})
@@ -178,18 +176,86 @@ elif page == "Graphiques interactifs":
     fig3.update_layout(title = {'x':0.5}, plot_bgcolor = "rgba(0,0,0,0)")
     st.plotly_chart(fig3,use_container_width=True)
 
+    Q3,Q4 = st.columns([1, 2])
+
+    with Q3:
+        df6 = df_filtre.groupby(by = ['trajet','grav'])['Num_Acc'].count().reset_index()
+        df6 = df6.rename(columns={'Num_Acc': 'nb_accidents'})
+        fig6 = px.bar(df6,
+                                x='trajet',
+                                y='nb_accidents',
+                                color='grav',
+                                title='Nombre d\'accidents par années')
+        fig6.update_layout(title = {'x' : 0.5},
+                                        plot_bgcolor = "rgba(0,0,0,0)",
+                                        xaxis =(dict(tickangle=45,  # Angle d'inclinaison
+                                                    title='trajet',  # Titre de l'axe des x
+                                                    showgrid=False)),
+                                        yaxis =(dict(showgrid = False)))
+        st.plotly_chart(fig6,use_container_width=True, figsize=(10, 6))
+
+    with Q4:
+        df7 = df_filtre.loc[df_filtre['age']<=100]
+        df7 = df7.groupby(by = ['age','grav'])['Num_Acc'].count().reset_index()
+        df7 = df7.rename(columns={'Num_Acc': 'nb_accidents'})
+        fig7 = px.line(df7,x='age',y='nb_accidents',color='grav',title='Nombre d\'accidents par rapport à l\'âge et la gravité')
+        fig7.update_layout(title = {'x':0.5}, plot_bgcolor = "rgba(0,0,0,0)")
+        st.plotly_chart(fig7,use_container_width=True)
+
+    ##DIAGRAMME DE FLUX   
+    df5bis = df_filtre
+    # Créer un dictionnaire de mappage
+    group_mapping = {
+        'Normale': 'Normale',
+        'Neige - grêle': 'Neige - grêle',
+        'Temps éblouissant': 'Conditions dégradées',
+        'Vent fort - tempête': 'Conditions dégradées',
+        'Pluie légère': 'Conditions dégradées',
+        'Pluie forte': 'Conditions dégradées',
+        'Brouillard - fumée': 'Conditions dégradées',
+        'Temps couvert': 'Conditions dégradées',
+        'Autre': 'Conditions dégradées'     
+    }
+    df5bis['atm'] = df5bis['atm'].replace(group_mapping)
+    df5 = df5bis.groupby(by=['atm', 'grav'])['Num_Acc'].count().reset_index()
+    df5 = df5.rename(columns={'Num_Acc': 'nb_accidents'})
+    # Créez le diagramme Sankey
+    fig = go.Figure(go.Sankey(
+        node=dict(
+            pad=15,
+            thickness=20,
+            line=dict(color="black", width=0.5),
+            label=['Conditions dégradées', 'Neige - grêle', 'Normale', "Blessés hospitalisés", "Blessés légers", "Indemnes", "Tués"]
+        ),
+        link=dict(
+            source=[0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2],
+            target=[3, 4, 5, 6, 3, 4, 5, 6, 3, 4, 5, 6],
+            value=df5["nb_accidents"]
+        )
+    ))
+    fig.update_layout(title="Diagramme de flux")
+    # Affichez le diagramme dans Streamlit
+    st.plotly_chart(fig)
+
+    #SAISONNALITE DES ACCIDENTS PAR GRAVITE
+    df4 = df_filtre.groupby(by = ['mois','grav'])['Num_Acc'].count().reset_index()
+    df4 = df4.rename(columns={'Num_Acc': 'nb_accidents'})
+    # Liste des mois dans l'ordre de l'arrivée
+    ordre_des_mois = ["janvier", "fevrier", "mars", "avril", "mai", "juin", "juillet", "aout", "septembre", "octobre", "novembre", "decembre"]
+    df4.columns = ['mois', 'grav', 'nb_accidents']
+    df4['mois'] = pandas.Categorical(df4['mois'], categories=ordre_des_mois, ordered=True)
+    df4 = df4.sort_values(by='mois')
+    fig4 = px.line(df4,x='mois',y='nb_accidents',color='grav',title='Saisonnalité des accidents par rapport à la gravité')
+    fig4.update_layout(title = {'x':0.5}, plot_bgcolor = "rgba(0,0,0,0)")
+    st.plotly_chart(fig4,use_container_width=True)
+
+    ##CARTE
     # Supprimez les lignes avec des valeurs NaN dans les colonnes 'lat' et 'long'
     data_carte = df_filtre.dropna(subset=['lat', 'long'])
-
-    # Créez un curseur pour sélectionner l'année
-    selected_year = st.slider("Sélectionnez une année", min_value=2015, max_value=2021, value=2019)
-
     # Créez un menu déroulant pour sélectionner le mois
     selected_month = st.selectbox("Sélectionnez un mois", ["janvier", "fevrier", "mars", "avril", "mai", "juin", "juillet", "aout", "septembre", "octobre", "novembre", "decembre"])
-
     # Filtrez les données en fonction de l'année et du mois sélectionnés
-    data_filtered = data_carte[(data_carte['an'] == selected_year) & (data_carte['mois'] == selected_month)]
-
+    data_filtered = data_carte[(data_carte['an'] == 2021) & (data_carte['mois'] == selected_month)]
     # Créez une carte centrée sur la France
     m = folium.Map(location=[46.603354, 1.888334], zoom_start=6)
 
@@ -197,7 +263,6 @@ elif page == "Graphiques interactifs":
     for index, row in data_filtered.iterrows():
         latitude, longitude = row['lat'], row['long']
         gravite = row['grav']
-
         # Détermination de la couleur du marqueur en fonction de la gravité
         if gravite == 'Tué':
             marker_color = 'red'
@@ -207,10 +272,8 @@ elif page == "Graphiques interactifs":
             marker_color = 'orange'
         elif gravite == 'Blessé hospitalisé':
             marker_color = 'blue'
-
         # Ajout d'un marqueur à la carte
         folium.Marker([latitude, longitude], icon=folium.Icon(icon='circle', color=marker_color, min_zoom=10, max_zoom=10)).add_to(m)
-    
     # Affichez la carte dans Streamlit avec bonne largeur
     st.markdown(
         """
@@ -225,42 +288,9 @@ elif page == "Graphiques interactifs":
     """,
     unsafe_allow_html=True,
     )
-
     # Affichez la carte dans Streamlit
     folium_static(m)
     #st_folium(m)
-
-    df4 = df_filtre.groupby(by = ['mois','grav'])['Num_Acc'].count().reset_index()
-    df4 = df4.rename(columns={'Num_Acc': 'nb_accidents'})
-    # Liste des mois dans l'ordre de l'arrivée
-    ordre_des_mois = ["janvier", "fevrier", "mars", "avril", "mai", "juin", "juillet", "aout", "septembre", "octobre", "novembre", "decembre"]
-    df4.columns = ['mois', 'grav', 'nb_accidents']
-    df4['mois'] = pandas.Categorical(df4['mois'], categories=ordre_des_mois, ordered=True)
-    df4 = df4.sort_values(by='mois')
-    fig4 = px.line(df4,x='mois',y='nb_accidents',color='grav',title='Saisonnalité des accidents par rapport à la gravité')
-    fig4.update_layout(title = {'x':0.5}, plot_bgcolor = "rgba(0,0,0,0)")
-    st.plotly_chart(fig4,use_container_width=True)
-
-    df5 = df_filtre.groupby(by=['lum', 'grav'])['Num_Acc'].count().reset_index()
-    df5 = df5.rename(columns={'Num_Acc': 'nb_accidents'})
-    # Créez le diagramme Sankey
-    fig = go.Figure(go.Sankey(
-        node=dict(
-            pad=15,
-            thickness=20,
-            line=dict(color="black", width=0.5),
-            label=df5["lum"].unique().tolist() + df5["grav"].unique().tolist()
-        ),
-        link=dict(
-            source=[0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5],
-            target=[5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8],
-            value=df5["nb_accidents"]
-        )
-    ))
-    fig.update_layout(title="Diagramme Sankey")
-
-    # Affichez le diagramme dans Streamlit
-    st.plotly_chart(fig)
 
 elif page == "Machine Learning":
     st.title("Page 2")
