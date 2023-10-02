@@ -13,19 +13,14 @@ La base utilisée comporte des données sur les accidents de vélo en France ent
 ### Arborescence
 
 PROJET_DATA_VISUALISATION/
-
 ├── accidentsVelo.xslx : Base de données retraitée sous format excel des accidents de vélo
-
 ├── Notebook.ipynb : Notebook qui permet d'afficher les graphiques d'analyse de la base de données
-
 ├── test.py : Script python qui permet de lancer l'application streamlit
-
 ├── README.md: Informations générales sur le projet
-
 ├── requirements.txt: Les packages ayant été utilisés pour le projet
 
 ### Pré-requis
 
-Pour exécuter les programmes, vous aurez besoin des packages contenus dans le fichier requirements.txt. Vous pouvez tous les installer avec la commande pip install -r requirements.txt
+Pour exécuter les programmes, vous aurez besoin des packages contenus dans le fichier requirements.txt. Vous pouvez tous les installer avec la commande "pip install -r requirements.txt"
 
 
