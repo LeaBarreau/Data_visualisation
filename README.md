@@ -23,3 +23,7 @@ PROJET_DATA_VISUALISATION/
 ├── README.md: Informations générales sur le projet
 
 ├── requirements.txt: Les packages ayant été utilisés pour le projet
+
+### Pré-requis
+
+Pour exécuter les programmes, vous aurez besoin des packages contenus dans le fichier requirements.txt. Vous pouvez tous les installer avec la commande pip install -r requirements.txt
