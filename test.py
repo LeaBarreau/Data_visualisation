@@ -5,7 +5,9 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 import streamlit as st
 from streamlit_folium import st_folium
+from streamlit_folium import folium_static
 from wordcloud import WordCloud
+import plotly.graph_objects as go
 
 # Définissez la largeur de la page Streamlit
 st.set_page_config(layout="wide")
@@ -123,6 +125,7 @@ def import_data():
         976: 'Mayotte'
     }
     data['region'] = data['dep'].map(departement_region)
+    data = data.dropna(subset=['region'])
     return data
 
 data = import_data()
@@ -206,10 +209,26 @@ elif page == "Graphiques interactifs":
             marker_color = 'blue'
 
         # Ajout d'un marqueur à la carte
-        folium.Marker([latitude, longitude], icon=folium.Icon(icon='circle', color=marker_color)).add_to(m)
+        folium.Marker([latitude, longitude], icon=folium.Icon(icon='circle', color=marker_color, min_zoom=10, max_zoom=10)).add_to(m)
+    
+    # Affichez la carte dans Streamlit avec bonne largeur
+    st.markdown(
+        """
+        <style>
+        #map {
+             display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 80vh;  /* Ajustez la hauteur en fonction de vos besoins */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+    )
 
     # Affichez la carte dans Streamlit
-    st_folium(m)
+    folium_static(m)
+    #st_folium(m)
 
     df4 = df_filtre.groupby(by = ['mois','grav'])['Num_Acc'].count().reset_index()
     df4 = df4.rename(columns={'Num_Acc': 'nb_accidents'})
@@ -222,15 +241,26 @@ elif page == "Graphiques interactifs":
     fig4.update_layout(title = {'x':0.5}, plot_bgcolor = "rgba(0,0,0,0)")
     st.plotly_chart(fig4,use_container_width=True)
 
-    #TEST TEST TEST
-    # Créez une liste de mots
-    mots = ["Python", "Data", "Science", "Nuage", "Mot", "Visualisation", "OpenAI", "Intelligence", "Artificielle"]
-    # Convertissez la liste de mots en une chaîne de caractères
-    texte = ' '.join(mots)
-    # Créez un nuage de mots
-    nuage_de_mots = WordCloud(width=800, height=400, background_color='white').generate(texte)
-    # Créez une figure Matplotlib pour le nuage de mots
-    st.image(nuage_de_mots.to_image(), use_container_width=True)
+    df5 = df_filtre.groupby(by=['lum', 'grav'])['Num_Acc'].count().reset_index()
+    df5 = df5.rename(columns={'Num_Acc': 'nb_accidents'})
+    # Créez le diagramme Sankey
+    fig = go.Figure(go.Sankey(
+        node=dict(
+            pad=15,
+            thickness=20,
+            line=dict(color="black", width=0.5),
+            label=df5["lum"].unique().tolist() + df5["grav"].unique().tolist()
+        ),
+        link=dict(
+            source=[0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5],
+            target=[5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8],
+            value=df5["nb_accidents"]
+        )
+    ))
+    fig.update_layout(title="Diagramme Sankey")
+
+    # Affichez le diagramme dans Streamlit
+    st.plotly_chart(fig)
 
 elif page == "Machine Learning":
     st.title("Page 2")
