@@ -8,6 +8,9 @@ from streamlit_folium import st_folium
 from streamlit_folium import folium_static
 from wordcloud import WordCloud
 import plotly.graph_objects as go
+import geopandas as gpd
+from streamlit_folium import folium_static
+from geopy.geocoders import Nominatim
 
 # Définissez la largeur de la page Streamlit
 st.set_page_config(layout="wide")
@@ -138,9 +141,9 @@ if page == "Statistiques descriptives":
 
 elif page == "Graphiques interactifs":
     with st.sidebar:
-            region_filter = st.multiselect(label='Selectionnez une région',
-                                options=data['region'].unique(),
-                                default=data['region'].unique())
+            region_filter = st.selectbox(label='Sélectionnez une région',
+                                   options=data['region'].unique(),
+                                   index=0) 
 
     df_filtre = data.query('region == @region_filter')
 
@@ -255,9 +258,14 @@ elif page == "Graphiques interactifs":
     # Créez un menu déroulant pour sélectionner le mois
     selected_month = st.selectbox("Sélectionnez un mois", ["janvier", "fevrier", "mars", "avril", "mai", "juin", "juillet", "aout", "septembre", "octobre", "novembre", "decembre"])
     # Filtrez les données en fonction de l'année et du mois sélectionnés
-    data_filtered = data_carte[(data_carte['an'] == 2021) & (data_carte['mois'] == selected_month)]
+    data_filtered = data_carte[(data_carte['mois'] == selected_month)]
     # Créez une carte centrée sur la France
-    m = folium.Map(location=[46.603354, 1.888334], zoom_start=6)
+    # Créez une carte Folium centrée sur la région
+    region_selected_data = gdf_regions[gdf_regions['Nom'] == region_filter]
+    m = folium.Map(location=[data_filtered['lat'].values[0], data_filtered['long'].values[0]], zoom_start=7)
+    # Ajoutez le polygone de la région à la carte
+    folium.GeoJson(data_filtered).add_to(m)
+    #m = folium.Map(location=[data_filtered['lat'].max(), data_filtered['long'].max()], zoom_start=7)
 
     # Parcourez les lignes du DataFrame pour ajouter des marqueurs sur la carte
     for index, row in data_filtered.iterrows():
