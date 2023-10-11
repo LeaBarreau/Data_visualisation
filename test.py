@@ -255,17 +255,18 @@ elif page == "Graphiques interactifs":
     ##CARTE
     # Supprimez les lignes avec des valeurs NaN dans les colonnes 'lat' et 'long'
     data_carte = df_filtre.dropna(subset=['lat', 'long'])
+    # Créez une carte centrée sur la région étudiée
+    center_lat = data_carte[0][8]  # Utilisez la moyenne des latitudes pour centrer la carte
+    center_long = data_carte[0][9] # Utilisez la moyenne des longitudes pour centrer la carte
     # Créez un menu déroulant pour sélectionner le mois
     selected_month = st.selectbox("Sélectionnez un mois", ["janvier", "fevrier", "mars", "avril", "mai", "juin", "juillet", "aout", "septembre", "octobre", "novembre", "decembre"])
     # Filtrez les données en fonction de l'année et du mois sélectionnés
-    data_filtered = data_carte[(data_carte['mois'] == selected_month)]
+    data_filtered = data_carte[((data_carte['an']==2021) & (data_carte['mois'] == selected_month))]
     # Créez une carte centrée sur la France
-    # Créez une carte Folium centrée sur la région
-    region_selected_data = gdf_regions[gdf_regions['Nom'] == region_filter]
-    m = folium.Map(location=[data_filtered['lat'].values[0], data_filtered['long'].values[0]], zoom_start=7)
-    # Ajoutez le polygone de la région à la carte
-    folium.GeoJson(data_filtered).add_to(m)
-    #m = folium.Map(location=[data_filtered['lat'].max(), data_filtered['long'].max()], zoom_start=7)
+    m = folium.Map(location=[center_lat, center_long], zoom_start=7)
+    # Créez une zone de contour autour de la région étudiée
+   # polygon_points = list(zip(data_carte['lat'], data_carte['long']))
+   # folium.Polygon(locations=polygon_points, color='blue').add_to(m)
 
     # Parcourez les lignes du DataFrame pour ajouter des marqueurs sur la carte
     for index, row in data_filtered.iterrows():
