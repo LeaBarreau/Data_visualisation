@@ -138,11 +138,69 @@ data = import_data()
 page = st.sidebar.selectbox("Choisissez une page", ["Statistiques descriptives", "Graphiques interactifs", "Machine Learning"])
 
 if page == "Statistiques descriptives":
-    st.title("page accueil")
-    C1, C2, C3, C4, C5, C6, C7, C8, C9, C10 = st.columns(10)
+    datamoy = data.groupby(['grav'])['Num_Acc'].count().reset_index()
+    datamoy = datamoy.rename(columns={'Num_Acc': 'nb_accidents'})
 
-    with C1 :
-        st.image("âge.png", caption=10, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+    st.subheader("74 758 accidents de vélo recensés mais combien sont restés indemnes ?")
+    C7, C8, C9, C10 = st.columns(4)
+    with C7 :
+        st.image("indemne.png", caption=None, width=120, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+        st.write("Nombre :", datamoy.loc[datamoy['grav'] == 'Indemne', 'nb_accidents'].values[0])
+    with C8 :
+        st.image("Blésser léger.png", caption=None, width=120, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+        st.write("Nombre :", datamoy.loc[datamoy['grav'] == 'Blessé léger', 'nb_accidents'].values[0])
+    with C9 :
+        st.image("Blésser hospitalisés.png", caption=None, width=120, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+        st.write("Nombre :", datamoy.loc[datamoy['grav'] == 'Blessé hospitalisé', 'nb_accidents'].values[0])
+    with C10 :
+        st.image("mort.png", caption=None, width=120, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+        st.write("Nombre :", datamoy.loc[datamoy['grav'] == 'Tué', 'nb_accidents'].values[0])
+    
+    st.subheader("Selon les statistiques, quel mois, quel jour, à quelle heure a-t-on le plus de chance d'avoir un accident de vélo ?")
+    C2, C3, C4, C5 = st.columns(4)
+    with C2 :
+        st.image("année.png", caption=None, width=120, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+        st.write(data['an'].mode().values[0])
+    with C3 :
+        st.image("mois.png", caption=None, width=120, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+        st.write(data['mois'].mode().values[0])
+    with C4 :
+        st.image("jours.png", caption=None, width=120, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+        st.write(data['jour'].mode().values[0])
+    with C5 :
+        st.image("heure.png", caption=None, width=120, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+        st.write(data['hrmn'].mode().values[0])
+    
+    # Titre intermédiaire
+    st.subheader("L'année 2018, un tournant")
+
+    # Contenu de la première section
+    st.write("Ecrire du contenu")
+
+    Q1,Q2 = st.columns(2)
+
+    with Q1:
+        dfQ1 = data.groupby(by = ['an','grav'])['Num_Acc'].count().reset_index()
+        dfQ1 = dfQ1.rename(columns={'Num_Acc': 'nb_accidents'})
+        figQ1 = px.bar(dfQ1,
+                                x='an',
+                                y='nb_accidents',
+                                color='grav',
+                                title='Nombre d\'accidents en fonction de l\'année')
+        figQ1.update_layout(plot_bgcolor = "rgba(0,0,0,0)",
+                                        xaxis =(dict(showgrid = False,
+                                                     title='Année')),
+                                        yaxis =(dict(showgrid = False,
+                                                     title='Nombre d\'accidents')))
+        st.plotly_chart(figQ1,use_container_width=True, figsize=(10, 6))
+    st.text("    ")
+
+    with Q2:
+        dfQ2 = data.groupby(by = ['grav'])['Num_Acc'].count().reset_index()
+        dfQ2 = dfQ2.rename(columns={'Num_Acc': 'nb_accidents'})
+        figQ2 = px.pie(dfQ2,names='grav',values='nb_accidents',title='Représentation du nombre d\'accients par gravité')
+        figQ2.update_layout(plot_bgcolor = "rgba(0,0,0,0)")
+        st.plotly_chart(figQ2,use_container_width=True)
 
 
 elif page == "Graphiques interactifs":
