@@ -201,7 +201,19 @@ if page == "Statistiques descriptives":
         figQ2 = px.pie(dfQ2,names='grav',values='nb_accidents',title='Représentation du nombre d\'accients par gravité')
         figQ2.update_layout(plot_bgcolor = "rgba(0,0,0,0)")
         st.plotly_chart(figQ2,use_container_width=True)
+        
+    # Supprimez les lignes avec des valeurs NaN dans les colonnes 'lat' et 'long'
+    data_carte = data.dropna(subset=['lat', 'long'])
 
+    # Ajoutez une colonne 'marker_color' en fonction de la gravité
+    data_carte['marker_color'] = data_carte['grav'].apply(lambda x: '#ff0019' if x == 'Tué' else ('#43ff00' if x == 'Indemne' else ('#ff5000' if x == 'Blessé léger' else '#0044ff')))
+
+    # Calculez la latitude et la longitude moyennes pour centrer la carte
+    center_lat = 46.603354
+    center_long = 1.888334
+    
+    # Créez la carte avec des marqueurs colorés en fonction de la gravité et centrez-la sur la moyenne des coordonnées
+    st.map(data_carte, latitude='lat', longitude='long', color='marker_color', zoom=6, use_container_width=True)
 
 elif page == "Graphiques interactifs":
     with st.sidebar:
