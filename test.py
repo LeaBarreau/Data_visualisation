@@ -139,8 +139,11 @@ page = st.sidebar.selectbox("Choisissez une page", ["Statistiques descriptives",
 
 if page == "Statistiques descriptives":
     st.title("page accueil")
+    C1, C2, C3, C4, C5, C6, C7, C8, C9, C10 = st.columns(10)
 
-    
+    with C1 :
+        st.image("âge.png", caption=10, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+
 
 elif page == "Graphiques interactifs":
     with st.sidebar:
