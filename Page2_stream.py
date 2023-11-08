@@ -140,8 +140,9 @@ with st.sidebar:
 df_filtre = data.query('region == @region_filter')
 
 # Titre intermédiaire
-st.subheader("L'année 2018, un tournant")
+st.title("Zoom sur la région suivante : {}".format(region_filter))
 
+st.subheader("L'année 2018, un tournant")
 # Contenu de la première section
 st.write("Ecrire du contenu")
 
