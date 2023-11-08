@@ -14,6 +14,11 @@ from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 import nltk
 from nltk.tokenize import word_tokenize
 import random
+import seaborn as sns
+from folium.plugins import HeatMap
+import geoviews as gv
+import geopandas as gpd
+from pandas import merge
 
 # Définissez la largeur de la page Streamlit
 st.set_page_config(layout="wide")
@@ -258,4 +263,8 @@ show_wordcloud_from_column(data, selected_column)
 
 
 #HEAT MAP
-dfhm = data.groupby(by = ['region','grav'])['Num_Acc'].mean().reset_index()
+sf = gpd.read_file('france-geojson/departements-version-simplifiee.geojson')
+jf = sf.merge(data, left_on='code', right_on='dep', suffixes=('','_y'))
+regions = gv.Polygons(jf, vdims=['nom', 't_total', 'h_total', 'f_total'])
+regions.opts(width=600, height=600, toolbar='above', color=dim('t_total')/1e6, 
+             colorbar=True, tools=['hover'], aspect='equal')
