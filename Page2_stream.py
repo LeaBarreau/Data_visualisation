@@ -10,6 +10,7 @@ from streamlit_folium import folium_static
 import plotly.graph_objects as go
 import geopandas as gpd
 from streamlit_folium import folium_static
+from folium.plugins import MarkerCluster
 
 # Définissez la largeur de la page Streamlit
 st.set_page_config(layout="wide")
@@ -353,7 +354,7 @@ for index, row in data_filtered.iterrows():
     elif gravite == 'Blessé hospitalisé':
         marker_color = 'blue'
     # Ajout d'un marqueur à la carte
-    folium.Marker([latitude, longitude], icon=folium.Icon(icon='circle', color=marker_color, min_zoom=10, max_zoom=10)).add_to(m)
+    folium.Marker([latitude, longitude], icon=folium.Icon(icon='circle', color=marker_color, min_zoom=10, max_zoom=10), popup=f"Age: {row['age']}, Sexe: {row['sexe']}").add_to(m)
 # Affichez la carte dans Streamlit avec bonne largeur
 st.markdown(
     """
@@ -370,4 +371,15 @@ unsafe_allow_html=True,
 )
 # Affichez la carte dans Streamlit
 folium_static(m)
-#st_folium(m)
+
+# Diagramme de dispersion interactif
+import altair as alt
+
+st.subheader('Diagramme de dispersion interactif')
+scatter_chart = alt.Chart(df_filtre).mark_circle().encode(
+    x='age',
+    y='grav',
+    color='atm',
+    tooltip=['hrmn', 'catr']
+).interactive()
+st.altair_chart(scatter_chart, use_container_width=True)
