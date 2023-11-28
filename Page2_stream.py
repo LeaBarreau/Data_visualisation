@@ -330,6 +330,7 @@ st.plotly_chart(fig4,use_container_width=True)
 
 ##CARTE
 from datetime import datetime, timedelta
+from unidecode import unidecode
 # Supprimer les lignes avec des valeurs NaN dans les colonnes 'lat' et 'long'
 df = df_filtre.dropna(subset=['lat', 'long'])
 
@@ -342,8 +343,8 @@ agg_data = df.groupby(df['date'].dt.to_period("M")).size().reset_index(name='nom
 # Filtrer les mois sans accidents
 agg_data = agg_data[agg_data['nombre_accidents'] > 0]
 
-# Convertir l'index de période en chaîne de caractères pour l'affichage
-agg_data['date_str'] = agg_data['date'].dt.strftime('%B %Y')
+# Convertir l'index de période en chaîne de caractères sans accents pour l'affichage
+agg_data['date_str'] = agg_data['date'].dt.strftime('%B %Y').apply(unidecode)
 
 # Créer un curseur avec seulement les mois et années où il y a eu des accidents
 selected_date_str = st.select_slider("Sélectionner une date", options=agg_data['date_str'])
