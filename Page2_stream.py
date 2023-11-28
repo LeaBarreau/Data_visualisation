@@ -329,48 +329,81 @@ fig4.update_layout(plot_bgcolor = "rgba(0,0,0,0)",
 st.plotly_chart(fig4,use_container_width=True)
 
 ##CARTE
-# Supprimez les lignes avec des valeurs NaN dans les colonnes 'lat' et 'long'
-data_carte = df_filtre.dropna(subset=['lat', 'long'])
-# Créez un menu déroulant pour sélectionner le mois
-selected_month = st.selectbox("Sélectionnez un mois", ["janvier", "fevrier", "mars", "avril", "mai", "juin", "juillet", "aout", "septembre", "octobre", "novembre", "decembre"])
-# Filtrez les données en fonction de l'année et du mois sélectionnés
-data_filtered = data_carte[((data_carte['an']==2021) & (data_carte['mois'] == selected_month))]
-col_lat = data_filtered['lat']  # Utilisez la moyenne des latitudes pour centrer la carte
-col_long = data_filtered['long'] # Utilisez la moyenne des longitudes pour centrer la carte
-# Créez une carte centrée sur la France
-m = folium.Map(location=[col_lat.mean(), col_long.mean()], zoom_start=7.5)
+from datetime import datetime, timedelta
+# Supprimer les lignes avec des valeurs NaN dans les colonnes 'lat' et 'long'
+df = df_filtre.dropna(subset=['lat', 'long'])
 
-# Parcourez les lignes du DataFrame pour ajouter des marqueurs sur la carte
-for index, row in data_filtered.iterrows():
-    latitude, longitude = row['lat'], row['long']
-    gravite = row['grav']
-    # Détermination de la couleur du marqueur en fonction de la gravité
-    if gravite == 'Tué':
-        marker_color = 'red'
-    elif gravite == 'Indemne':
-        marker_color = 'green'
-    elif gravite == 'Blessé léger':
-        marker_color = 'orange'
-    elif gravite == 'Blessé hospitalisé':
-        marker_color = 'blue'
-    # Ajout d'un marqueur à la carte
-    folium.Marker([latitude, longitude], icon=folium.Icon(icon='circle', color=marker_color, min_zoom=10, max_zoom=10), popup=f"Age: {row['age']}, Sexe: {row['sexe']}").add_to(m)
-# Affichez la carte dans Streamlit avec bonne largeur
-st.markdown(
-    """
-    <style>
-    #map {
+# Convertir la colonne 'date' au format datetime
+df['date'] = pd.to_datetime(df['date'])
+
+# Agréger les données par mois et année
+agg_data = df.groupby(df['date'].dt.to_period("M")).size().reset_index(name='nombre_accidents')
+
+# Filtrer les mois sans accidents
+agg_data = agg_data[agg_data['nombre_accidents'] > 0]
+
+# Convertir l'index de période en chaîne de caractères pour l'affichage
+agg_data['date_str'] = agg_data['date'].dt.strftime('%B %Y')
+
+# Créer un curseur avec seulement les mois et années où il y a eu des accidents
+selected_date_str = st.select_slider("Sélectionner une date", options=agg_data['date_str'])
+
+# Convertir la chaîne de caractères de date sélectionnée en période
+selected_date_period = pd.to_datetime(selected_date_str, format="%B %Y").to_period("M")
+
+# Filtrer les données en fonction de la date sélectionnée
+data_filtered = df[df['date'].dt.to_period("M") == selected_date_period]
+
+# Drop rows with NaN values in lat or long
+data_filtered = data_filtered.dropna(subset=['lat', 'long'])
+
+# Check if there are still rows with missing location values
+if data_filtered.empty:
+    st.warning("Aucune donnée disponible pour la date sélectionnée.")
+else:
+    # Utilisez la moyenne des latitudes pour centrer la carte
+    col_lat = data_filtered['lat']
+    # Utilisez la moyenne des longitudes pour centrer la carte
+    col_long = data_filtered['long']
+
+    # Créer une carte centrée sur la France
+    m = folium.Map(location=[col_lat.median(), col_long.median()], zoom_start=7.5)
+
+    # Parcourir les lignes du DataFrame pour ajouter des marqueurs sur la carte
+    for index, row in data_filtered.iterrows():
+        latitude, longitude = row['lat'], row['long']
+        gravite = row['grav']
+
+        # Détermination de la couleur du marqueur en fonction de la gravité
+        if gravite == 'Tué':
+            marker_color = 'red'
+        elif gravite == 'Indemne':
+            marker_color = 'green'
+        elif gravite == 'Blessé léger':
+            marker_color = 'orange'
+        elif gravite == 'Blessé hospitalisé':
+            marker_color = 'blue'
+
+        # Ajout d'un marqueur à la carte
+        folium.Marker([latitude, longitude], icon=folium.Icon(icon='circle', color=marker_color, min_zoom=10, max_zoom=10), popup=f"Age: {row['age']}, Sexe: {row['sexe']}").add_to(m)
+
+    # Afficher la carte dans Streamlit avec une bonne largeur
+    st.markdown(
+        """
+        <style>
+        #map {
             display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 80vh;  /* Ajustez la hauteur en fonction de vos besoins */
-}
-</style>
-""",
-unsafe_allow_html=True,
-)
-# Affichez la carte dans Streamlit
-folium_static(m)
+            justify-content: center;
+            align-items: center;
+            height: 80vh;  /* Ajustez la hauteur en fonction de vos besoins */
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Afficher la carte dans Streamlit
+    folium_static(m)
 
 # Diagramme de dispersion interactif
 import altair as alt
