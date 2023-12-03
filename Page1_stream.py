@@ -24,7 +24,9 @@ from pandas import merge
 st.set_page_config(layout="wide")
 
 st.title("La sécurité routière, même à vélo !")
-st.write("Les données expoitées courent depuis 2005")
+st.write("Bienvenue sur notre application dédiée à la sensibilisation aux accidents de vélo sur une période allant de 2005 à 2021. Face à la préoccupation croissante pour la sécurité des cyclistes, notre plateforme a pour objectif de fournir une compréhension approfondie des incidents impliquant des vélos au cours des dernières années.")
+st.write("Grâce à des données exhaustives recueillies sur une période de 16 ans, notre application offre une vision panoramique des tendances, des facteurs de risque et des zones géographiques les plus touchées par les accidents de vélo. Nous mettons l'accent sur l'éducation et la sensibilisation, visant à réduire le nombre d'incidents en fournissant des informations clés aux cyclistes, aux autorités locales et à la communauté en général.")
+st.write("Explorez des visualisations interactives, des cartes informatives et des analyses approfondies pour comprendre les causes sous-jacentes des accidents de vélo, les heures critiques, les types de voies les plus à risque, et bien plus encore. Ensemble, travaillons vers des solutions durables pour promouvoir la sécurité des cyclistes et minimiser les risques sur nos routes.")
 
 # Utilisez pd.read_excel() pour lire le fichier Excel dans un DataFrame
 @st.cache_data
@@ -182,7 +184,8 @@ with T2 :
 st.subheader("L'année 2018, un tournant")
 
 # Contenu de la première section
-st.write("Ecrire du contenu")
+st.write("L'année 2018 marque un tournant significatif dans la sécurité des cyclistes, avec une nette diminution du nombre d'accidents enregistrés. Plusieurs facteurs clés ont contribué à cette amélioration notable, démontrant l'impact positif des initiatives axées sur la sécurité routière et la sensibilisation.")
+st.write("Continuons dans ce sens!")
 
 Q1,Q2 = st.columns(2)
 
@@ -200,6 +203,8 @@ with Q1:
                                     yaxis =(dict(showgrid = False,
                                                     title='Nombre d\'accidents')))
     st.plotly_chart(figQ1,use_container_width=True, figsize=(10, 6))
+
+    st.write("Nous observons avec persistance que la répartition des niveaux de gravité des accidents reste constante au fil des années, soulignant la nécessité d'approches continues en matière de sécurité routière pour maintenir cette stabilité relativement positive.")
 st.text("    ")
 
 with Q2:
@@ -208,9 +213,10 @@ with Q2:
     figQ2 = px.pie(dfQ2,names='grav',values='nb_accidents',title='Représentation du nombre d\'accients par gravité')
     figQ2.update_layout(plot_bgcolor = "rgba(0,0,0,0)")
     st.plotly_chart(figQ2,use_container_width=True)
+    st.write("La moitié des accidents se traduisent par des blessures légères, suggérant des conditions de conduite relativement sûres. Toutefois, la proportion élevée de blessés hospitalisés souligne la nécessité de renforcer les mesures de prévention pour réduire la gravité des incidents.")
 
 st.subheader("Visualisation cartographique")
-
+st.write("Explorez la distribution géographique des accidents de vélo en France métropolitaine à partir de l'année 2019.")
 # Définissez les limites géographiques pour la France métropolitaine
 # Remarque : Les valeurs de latitude et de longitude sont approximatives et doivent être ajustées selon vos besoins.
 min_lat, max_lat = 41.2, 51.1  # Limites approximatives pour la latitude de la France métropolitaine
@@ -226,45 +232,49 @@ data_carte = data_carte[(data_carte['lat'] >= min_lat) & (data_carte['lat'] <= m
 # Créez la carte avec des marqueurs colorés en fonction de la gravité et centrez-la sur la moyenne des coordonnées
 st.map(data_carte, latitude='lat', longitude='long', size='size', color = 'couleur', zoom=4.5, use_container_width=True)
 
-st.subheader("Nuage de mots")
-#Word cloud
+st.write("Trois observations principales émergent de la carte géographique :")
+st.write("- 'Diagonale du Vide': Une tendance notable se dégage le long de la 'Diagonale du Vide', indiquant une région où les accidents de vélo sont nettement moins fréquents. Cette configuration peut résulter de divers facteurs, tels que des infrastructures cyclables bien entretenues, une faible densité de population, ou d'autres conditions propices à la sécurité des cyclistes.")
+st.write("- Foyer d'Accidents dans les Grandes Villes : Les grandes métropoles telles que Paris, Lyon et Bordeaux présentent une concentration significative d'accidents. Cette observation est probablement liée à une densité de population plus élevée, à des réseaux de transport complexes et à une cohabitation intense entre divers modes de déplacement.")
+st.write("- Risques le Long des Côtes : Les zones côtières montrent des incidents plus fréquents, influencés par des conditions géographiques spécifiques. Bien que des pistes cyclables attrayantes puissent encourager la pratique du vélo, elles peuvent également accroître les risques.")
+
+st.subheader("Quelles sont les conditions les plus probables d'un accident ?")
+st.write("Etudions les conditions (lumière, mois, conditions atmosphériques, équipements, ...) les plus probables pour un accident de vélo")
+# Concaténation des colonnes pertinentes
 data["Full"] = (
     data["lum"].astype(str) + " " +
     data["mois"].astype(str) + " " +
     data["col"].astype(str) + " " +
     data["obsm"].astype(str) + " " +
     data["atm"].astype(str) + " " +
-    data["equipement"].astype(str) + " " +
-    data["sexe"].astype(str)
+    data["equipement"].astype(str)
 )
-# Créez une fonction pour afficher le nuage de mots à partir d'une colonne
+# Fonction de prétraitement du texte
+def preprocess_text(text):
+    # Ajoutez d'autres étapes de prétraitement si nécessaire
+    return text.lower()
+# Fonction pour afficher le nuage de mots
 def show_wordcloud_from_column(data, column_name):
-    # Divisez le texte en mots en utilisant l'espace comme séparateur
-    texte_original = ' '.join(data[column_name])
-    mots = texte_original.split()
-    # Mélangez l'ordre des mots
-    random.shuffle(mots)
-    # Rejoignez les mots mélangés pour former une chaîne de caractères mélangée
-    texte_melange = ' '.join(mots)
-    exclure_mots = ['avec', 'd', 'du', 'de', 'la', 'des', 'le', 'et', 'est', 'elle', 'une', 'en', 'que', 'aux', 'qui', 'ces', 'les', 'dans', 'sur', 'l', 'un', 'pour', 'par', 'il', 'ou', 'à', 'ce', 'a', 'sont', 'cas', 'plus', 'leur', 'se', 's', 'vous', 'au', 'c', 'aussi', 'toutes', 'autre', 'comme', "Non", "Nan", "Null"]
-    # Générez le nuage de mots à partir des mots uniques
-    wordcloud = WordCloud(width=800, height=400, background_color='black', stopwords = exclure_mots, max_words=100).generate(texte_melange)
-
-    # Créez un conteneur pour afficher le nuage de mots avec une largeur personnalisée
+    texte_original = ' '.join(data[column_name].astype(str))
+    texte_preprocessed = preprocess_text(texte_original)
+    # Utiliser un ensemble pour stocker les mots uniques
+    mots_uniques = set(texte_preprocessed.split())
+    exclure_mots = ['légère','sans','2rm', '3rm', 'aucun','deux','véhicule', 'avec', 'd', 'du', 'de', 'la', 'des', 'le', 'et', 'est', 'elle', 'une', 'en', 'que', 'aux', 'qui', 'ces', 'les', 'dans', 'sur', 'l', 'un', 'pour', 'par', 'il', 'ou', 'à', 'ce', 'a', 'sont', 'cas', 'plus', 'leur', 'se', 's', 'vous', 'au', 'c', 'aussi', 'toutes', 'autre', 'comme', "non", "nan", "null"]
+    # Générer le nuage de mots à partir des mots uniques
+    wordcloud = WordCloud(width=800, height=400, background_color='black', stopwords=exclure_mots, max_words=100).generate(' '.join(mots_uniques))
     container = st.container()
     with container:
-        st.image(wordcloud.to_image(), caption="Nuage de mots")
-
-# Sélectionnez une colonne à partir de laquelle générer le nuage de mots
-selected_column = "Full"
-
+        st.image(wordcloud.to_image())
 # Affichez le nuage de mots pour la colonne sélectionnée
-show_wordcloud_from_column(data, selected_column)
+show_wordcloud_from_column(data, "Full")
+st.write("Il est observé que le terme 'collision' est dominant, indiquant que la plupart des accidents de vélo impliquent des collisions. De plus, les termes 'arrière', 'côté', 'vent', et 'animal' se distinguent particulièrement. En outre, en ce qui concerne les mois, 'mai' semble notable.")
 
-
-#HEAT MAP
-sf = gpd.read_file('france-geojson/departements-version-simplifiee.geojson')
-jf = sf.merge(data, left_on='code', right_on='dep', suffixes=('','_y'))
-regions = gv.Polygons(jf, vdims=['nom', 't_total', 'h_total', 'f_total'])
-regions.opts(width=600, height=600, toolbar='above', color=dim('t_total')/1e6, 
-             colorbar=True, tools=['hover'], aspect='equal')
+# Diagramme de dispersion interactif
+import altair as alt
+st.subheader('Diagramme de dispersion interactif')
+scatter_chart = alt.Chart(data).mark_circle().encode(
+    x='age',
+    y='grav',
+    color='atm',
+    tooltip=['hrmn', 'catr']
+).interactive()
+st.altair_chart(scatter_chart, use_container_width=True)

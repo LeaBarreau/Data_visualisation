@@ -16,7 +16,9 @@ from folium.plugins import MarkerCluster
 st.set_page_config(layout="wide")
 
 st.title("La sécurité routière, même à vélo !")
-st.write("Les données expoitées courent depuis 2005")
+st.write("Bienvenue sur notre page dédiée à la sécurité routière, où vous avez le pouvoir de découvrir et d'analyser les statistiques d'accidents de vélo spécifiques à votre région. Choisissez votre zone géographique et plongez-vous dans des données détaillées qui vous permettront de comprendre les tendances, les risques et les initiatives de sécurité routière adaptées à votre environnement local.")
+st.write("Sélectionnez votre région ci-dessous pour accéder à des visualisations interactives, des graphiques informatifs et des analyses approfondies, vous permettant ainsi de prendre des décisions éclairées pour une conduite plus sûre. Ensemble, travaillons à créer des communautés où chaque cycliste peut circuler en toute confiance, en bénéficiant d'une route plus sûre et adaptée à ses besoins spécifiques.")
+st.write("Votre sécurité routière à vélo commence ici, en vous informant !")
 
 # Utilisez pd.read_excel() pour lire le fichier Excel dans un DataFrame
 @st.cache_data
@@ -143,9 +145,9 @@ df_filtre = data.query('region == @region_filter')
 # Titre intermédiaire
 st.title("Zoom sur la région suivante : {}".format(region_filter))
 
-st.subheader("L'année 2018, un tournant")
+st.subheader("La tendance observée, pour chaque région, est similaire à celle observée pour l'intégralité des régions")
 # Contenu de la première section
-st.write("Ecrire du contenu")
+st.write("Nous observons une importante baisse des accidents de vélos après 2018.")
 
 
 Q1,Q2 = st.columns(2)
@@ -176,9 +178,6 @@ with Q2:
 # Titre intermédiaire
 st.subheader("Que cela soit en agglomération ou hors agglomération, n'oubliez pas l'existance du code de la route")
 
-# Contenu de la première section
-st.write("Ecrire du contenu")
-
 # Groupez les données par agglomération et gravité
 df_sankeyagg = df_filtre.groupby(['agg', 'grav']).size().reset_index(name='count')
 # Triez les données en fonction de la catégorie 'sexe'
@@ -206,11 +205,15 @@ figagg.update_layout(title="Relation entre le type de lieux et la gravité en fo
 # Affichez le diagramme dans Streamlit
 st.plotly_chart(figagg)
 
+
+st.write("Plusieurs observations pour chaque région peuvent être soulignées (hors Ile-De-France):")
+st.write("- Une prévalence accrue d'accidents en agglomération met en évidence les défis liés à la cohabitation entre divers modes de transport dans des zones urbaines animées.")
+st.write("- En agglomération, la part des blessés légers et des indemnes est plus importante que hors agglomération. On peut supposer que les infrastructures sont plus adaptées et que la vitesse est réduite en agglomération")
+st.write("- Un nombre plus important de décès hors agglomération souligne la nécessité de mettre en place des mesures spécifiques pour assurer la sécurité sur les routes rurales et périphériques.")
+
+
 # Titre intermédiaire
 st.subheader("Mesdames, vous semblez plus prudentes que messieurs")
-
-# Contenu de la première section
-st.write("Ecrire du contenu")
 
 # Groupez les données par sexe et gravité
 df_sankeysexe = df_filtre.groupby(['sexe', 'grav']).size().reset_index(name='count')
@@ -239,12 +242,15 @@ figsexe.update_layout(title="Relation entre le sexe et la gravité en fonction d
 # Affichez le diagramme dans Streamlit
 st.plotly_chart(figsexe)
 
+st.write("Plusieurs observations selon le sexe des conducteurs peuvent être soulignées:")
+st.write("- Mesdames, une tendance à la prudence est notable, se manifestant par une proportion plus faible de tous types d'accidents.")
+st.write("- Messieurs, la fréquence accrue d'accidents notamment graves souligne l'importance de la vigilance sur la route. Une attention particulière est nécessaire pour réduire la proportion élevée de décès et d'accidents graves chez les conducteurs masculins.")
+
 # Titre intermédiaire
 st.subheader("Même en promenade à vélo et qu'importe l'âge, restez vigilents")
 
 # Contenu de la première section
-st.write("Ecrire du contenu")
-
+st.write("Que vous soyez en promenade loisirs, en trajet domicile-travail ou pour toute autre raison, la sécurité à vélo est cruciale. Explorez ci-dessous le nombre d'accidents en fonction de l'âge et du type de trajet effectué.")
 
 ##NB D'ACCIDENTS SELON L'AGE ET LE TRAJET
 df3 = df_filtre.loc[df_filtre['age']<=100]
@@ -305,11 +311,44 @@ with Q4:
     # Affichez l'histogramme dans Streamlit
     st.plotly_chart(fig_age_gravity, use_container_width=True)
 
+# Commentaire sur le graphique
+st.write("L'analyse de ces différents graphiques révèle plusieurs tendances importantes qu'importe la région étudiée:")
+st.write("- Les accidents sont plus fréquents lors de promenades-loisirs et concernent principalement les 15-20 ans et les plus de 60 ans")
+st.write("- La part des personnes décédée lors d'un accident de vélo est plus importante pour les plus de 60 ans")
+
+st.subheader("Quelle est l'heure à laquelle a-t-on le plus de chance d'avoir un accident de vélo ?")
+# Convertissez-les en datetime complet en ajoutant une date factice
+df_filtre['heure'] = pd.to_datetime(df_filtre['hrmn'].apply(lambda x: pd.Timestamp.combine(pd.to_datetime('today').date(), x)))
+# Créez une nouvelle colonne 'heure_du_jour' qui contient uniquement l'heure de chaque accident
+df_filtre['heure_du_jour'] = df_filtre['heure'].dt.hour
+# Comptez le nombre d'accidents pour chaque heure
+accidents_par_heure = df_filtre.groupby(['heure_du_jour', 'grav'])['Num_Acc'].count().reset_index()
+accidents_par_heure = accidents_par_heure.rename(columns={'Num_Acc': 'nb_accidents'})
+bins = [0, 15, 25, 40, 50, 60, 70, 80, 100]
+labels = ['0-15', '16-25', '26-40', '41-50', '51-60', '61-70', '71-80', '81-100']
+# Créez un histogramme
+fig_heure = px.bar(
+    accidents_par_heure,
+    x='heure_du_jour',
+    y='nb_accidents',
+    color='grav',
+    title='Nombre d\'accidents en fonction de l\'heure et par gravité'
+)
+fig_heure.update_layout(plot_bgcolor="rgba(0,0,0,0)",
+                                xaxis =(dict(tickangle=45,  # Angle d'inclinaison
+                                            title='Heure',  # Titre de l'axe des x
+                                            showgrid=False)),
+                                yaxis =(dict(showgrid = False,
+                                                title='Nombre d\'accidents')))
+# Affichez l'histogramme dans Streamlit
+st.plotly_chart(fig_heure, use_container_width=True)
+st.write("Nous remarquons que la majorité des accidents de vélo ont eu lieu entre 10h et 19h avec un pic entre 16h et 18h.  Les heures entre 16h et 18h correspondent généralement aux heures de pointe dans de nombreuses régions.")
+
 # Titre intermédiaire
 st.subheader("L'été, une période à haut risque : zoom sur votre région")
 
 # Contenu de la première section
-st.write("Ecrire du contenu")
+st.write("L'été est une période à haut risque sur les routes, et pour mieux comprendre cette dynamique, explorez ci-dessous la saisonnalité des accidents en fonction de leur gravité.")
 
 #SAISONNALITE DES ACCIDENTS PAR GRAVITE
 df4 = df_filtre.groupby(by = ['mois','grav'])['Num_Acc'].count().reset_index()
@@ -328,8 +367,11 @@ fig4.update_layout(plot_bgcolor = "rgba(0,0,0,0)",
                                                     title='Nombre d\'accidents')))
 st.plotly_chart(fig4,use_container_width=True)
 
+st.write("L'analyse révèle une saisonnalité marquée, avec une augmentation notable du nombre d'accidents pendant les mois estivaux. Cette tendance à la hausse en été peut être explorée plus en détail sur la carte interactive ci-dessous. Utilisez le curseur pour sélectionner le mois et l'année entre janvier 2015 et décembre 2021 et examinez les variations mensuelles des accidents dans votre région. Vous pouvez cliquer sur les marqueurs colorés et ceux-ci vous indiqueront le sexe et l'âge de la personne accidentée.")
+
 ##CARTE
 from datetime import datetime, timedelta
+import calendar
 from unidecode import unidecode
 # Supprimer les lignes avec des valeurs NaN dans les colonnes 'lat' et 'long'
 df = df_filtre.dropna(subset=['lat', 'long'])
@@ -343,11 +385,11 @@ agg_data = df.groupby(df['date'].dt.to_period("M")).size().reset_index(name='nom
 # Filtrer les mois sans accidents
 agg_data = agg_data[agg_data['nombre_accidents'] > 0]
 
-# Convertir l'index de période en chaîne de caractères sans accents pour l'affichage
-agg_data['date_str'] = agg_data['date'].dt.strftime('%B %Y').apply(unidecode)
+# Convert the 'index' (month) values to a string without accents for display
+agg_data['date_str'] = agg_data['date'].dt.strftime('%B %Y').apply(lambda x: unidecode(x))
 
 # Créer un curseur avec seulement les mois et années où il y a eu des accidents
-selected_date_str = st.select_slider("Sélectionner une date", options=agg_data['date_str'])
+selected_date_str = st.select_slider("Select a date", options=agg_data['date'].dt.strftime('%B %Y').apply(lambda x: unidecode(x)))
 
 # Convertir la chaîne de caractères de date sélectionnée en période
 selected_date_period = pd.to_datetime(selected_date_str, format="%B %Y").to_period("M")
@@ -405,15 +447,3 @@ else:
 
     # Afficher la carte dans Streamlit
     folium_static(m)
-
-# Diagramme de dispersion interactif
-import altair as alt
-
-st.subheader('Diagramme de dispersion interactif')
-scatter_chart = alt.Chart(df_filtre).mark_circle().encode(
-    x='age',
-    y='grav',
-    color='atm',
-    tooltip=['hrmn', 'catr']
-).interactive()
-st.altair_chart(scatter_chart, use_container_width=True)
