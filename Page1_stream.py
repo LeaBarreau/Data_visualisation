@@ -142,9 +142,9 @@ def import_data():
 
 data = import_data()
 
+@st.cache_data
 datamoy = data.groupby(['grav'])['Num_Acc'].count().reset_index()
 datamoy = datamoy.rename(columns={'Num_Acc': 'nb_accidents'})
-
 st.subheader("Quelques statistiques")
 T1, T2 = st.columns(2)
 with T1:
@@ -179,16 +179,12 @@ with T2 :
         st.image("heure.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
         st.write(data['hrmn'].mode().values[0])
     st.write("")
-
 # Titre intermédiaire
 st.subheader("L'année 2018, un tournant")
-
 # Contenu de la première section
 st.write("L'année 2018 marque un tournant significatif dans la sécurité des cyclistes, avec une nette diminution du nombre d'accidents enregistrés. Plusieurs facteurs clés ont contribué à cette amélioration notable, démontrant l'impact positif des initiatives axées sur la sécurité routière et la sensibilisation.")
 st.write("Continuons dans ce sens!")
-
 Q1,Q2 = st.columns(2)
-
 with Q1:
     dfQ1 = data.groupby(by = ['an','grav'])['Num_Acc'].count().reset_index()
     dfQ1 = dfQ1.rename(columns={'Num_Acc': 'nb_accidents'})
@@ -206,7 +202,6 @@ with Q1:
 
     st.write("Nous observons avec persistance que la répartition des niveaux de gravité des accidents reste constante au fil des années, soulignant la nécessité d'approches continues en matière de sécurité routière pour maintenir cette stabilité relativement positive.")
 st.text("    ")
-
 with Q2:
     dfQ2 = data.groupby(by = ['grav'])['Num_Acc'].count().reset_index()
     dfQ2 = dfQ2.rename(columns={'Num_Acc': 'nb_accidents'})
@@ -214,29 +209,24 @@ with Q2:
     figQ2.update_layout(plot_bgcolor = "rgba(0,0,0,0)")
     st.plotly_chart(figQ2,use_container_width=True)
     st.write("La moitié des accidents se traduisent par des blessures légères, suggérant des conditions de conduite relativement sûres. Toutefois, la proportion élevée de blessés hospitalisés souligne la nécessité de renforcer les mesures de prévention pour réduire la gravité des incidents.")
-
 st.subheader("Visualisation cartographique")
 st.write("Explorez la distribution géographique des accidents de vélo en France métropolitaine à partir de l'année 2019.")
 # Définissez les limites géographiques pour la France métropolitaine
 # Remarque : Les valeurs de latitude et de longitude sont approximatives et doivent être ajustées selon vos besoins.
 min_lat, max_lat = 41.2, 51.1  # Limites approximatives pour la latitude de la France métropolitaine
 min_long, max_long = -5.142, 9.561  # Limites approximatives pour la longitude de la France métropolitaine
-
 # Filtrer les données pour supprimer les points en dehors de la France métropolitaine
 data_carte = data.loc[data['an'] >= 2019]
 data_carte['size'] = data_carte['grav'].apply(lambda x: 20000 if x == 'Tué' else (10000 if x == 'Blessé hospitalisé' else (5000 if x == 'Blessé léger' else 2500)))
 data_carte['couleur'] = data_carte['grav'].apply(lambda x: '#8b0000' if x == 'Tué' else ('#b22222' if x == 'Blessé hospitalisé' else ('#dc143c' if x == 'Blessé léger' else '#f08080')))
 data_carte = data_carte.dropna(subset=['lat', 'long'])
 data_carte = data_carte[(data_carte['lat'] >= min_lat) & (data_carte['lat'] <= max_lat) & (data_carte['long'] >= min_long) & (data_carte['long'] <= max_long)]
-
 # Créez la carte avec des marqueurs colorés en fonction de la gravité et centrez-la sur la moyenne des coordonnées
 st.map(data_carte, latitude='lat', longitude='long', size='size', color = 'couleur', zoom=4.5, use_container_width=True)
-
 st.write("Trois observations principales émergent de la carte géographique :")
 st.write("- 'Diagonale du Vide': Une tendance notable se dégage le long de la 'Diagonale du Vide', indiquant une région où les accidents de vélo sont nettement moins fréquents. Cette configuration peut résulter de divers facteurs, tels que des infrastructures cyclables bien entretenues, une faible densité de population, ou d'autres conditions propices à la sécurité des cyclistes.")
 st.write("- Foyer d'Accidents dans les Grandes Villes : Les grandes métropoles telles que Paris, Lyon et Bordeaux présentent une concentration significative d'accidents. Cette observation est probablement liée à une densité de population plus élevée, à des réseaux de transport complexes et à une cohabitation intense entre divers modes de déplacement.")
 st.write("- Risques le Long des Côtes : Les zones côtières montrent des incidents plus fréquents, influencés par des conditions géographiques spécifiques. Bien que des pistes cyclables attrayantes puissent encourager la pratique du vélo, elles peuvent également accroître les risques.")
-
 st.subheader("Quelles sont les conditions les plus probables d'un accident ?")
 st.write("Etudions les conditions (lumière, mois, conditions atmosphériques, équipements, ...) les plus probables pour un accident de vélo")
 # Concaténation des colonnes pertinentes
@@ -266,15 +256,4 @@ def show_wordcloud_from_column(data, column_name):
         st.image(wordcloud.to_image())
 # Affichez le nuage de mots pour la colonne sélectionnée
 show_wordcloud_from_column(data, "Full")
-st.write("Il est observé que le terme 'collision' est dominant, indiquant que la plupart des accidents de vélo impliquent des collisions. De plus, les termes 'arrière', 'côté', 'vent', et 'animal' se distinguent particulièrement. En outre, en ce qui concerne les mois, 'mai' semble notable.")
-
-# Diagramme de dispersion interactif
-import altair as alt
-st.subheader('Diagramme de dispersion interactif')
-scatter_chart = alt.Chart(data).mark_circle().encode(
-    x='age',
-    y='grav',
-    color='atm',
-    tooltip=['hrmn', 'catr']
-).interactive()
-st.altair_chart(scatter_chart, use_container_width=True)
+st.write("Il est observé que le terme 'collision' est dominant, indiquant que la plupart des accidents de vélo impliquent des collisions. De plus, les termes 'arrière', 'côté', 'vent', et 'animal' se distinguent particulièrement. En outre, en ce qui concerne les mois, 'mai' et 'octobre' semblent notables.")
