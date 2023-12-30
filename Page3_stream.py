@@ -183,8 +183,10 @@ data = import_data()
 
 # Page de présentation des modèles
 def models_presentation():
+    global random_search
     @st.cache_data
     def test_model():
+        global random_search
         # Séparer les features et la variable cible
         X = data[["secuexist", "age", "region2", "lum", "atm", "catr", "trajet", "equipement", "homme"]]
         y = data['grav']
@@ -281,6 +283,7 @@ def models_presentation():
     
     @st.cache_data
     def xgboost_merged_classes():
+        global random_search
         # Séparer les features et la variable cible
         X = data[['region2', 'catr', "homme"]]
         y = data['grav']
@@ -339,50 +342,169 @@ def models_presentation():
         st.pyplot(fig)
         st.write("Le choix de notre modèle s'est avéré judicieux, comme le démontre la matrice de confusion. Cette dernière offre une visualisation claire de la performance du modèle en mettant en évidence un grand nombre de prédictions correctes et un nombre limité d'erreurs de prédiction. Les résultats indiquent une capacité significative du modèle à bien classifier les différentes classes de gravité des accidents de vélo. Nous observons une prépondérance de prédictions précises, illustrant ainsi la robustesse et la fiabilité de notre approche.")
     xgboost_merged_classes()
+      
+# Liste des régions françaises métropolitaines
+departements = {
+    "01": "Ain",
+    "02": "Aisne",
+    "03": "Allier",
+    "04": "Alpes-de-Haute-Provence",
+    "05": "Hautes-Alpes",
+    "06": "Alpes-Maritimes",
+    "07": "Ardèche",
+    "08": "Ardennes",
+    "09": "Ariège",
+    "10": "Aube",
+    "11": "Aude",
+    "12": "Aveyron",
+    "13": "Bouches-du-Rhône",
+    "14": "Calvados",
+    "15": "Cantal",
+    "16": "Charente",
+    "17": "Charente-Maritime",
+    "18": "Cher",
+    "19": "Corrèze",
+    "21": "Côte-d'Or",
+    "22": "Côtes-d'Armor",
+    "23": "Creuse",
+    "24": "Dordogne",
+    "25": "Doubs",
+    "26": "Drôme",
+    "27": "Eure",
+    "28": "Eure-et-Loir",
+    "29": "Finistère",
+    "2A": "Corse-du-Sud",
+    "2B": "Haute-Corse",
+    "30": "Gard",
+    "31": "Haute-Garonne",
+    "32": "Gers",
+    "33": "Gironde",
+    "34": "Hérault",
+    "35": "Ille-et-Vilaine",
+    "36": "Indre",
+    "37": "Indre-et-Loire",
+    "38": "Isère",
+    "39": "Jura",
+    "40": "Landes",
+    "41": "Loir-et-Cher",
+    "42": "Loire",
+    "43": "Haute-Loire",
+    "44": "Loire-Atlantique",
+    "45": "Loiret",
+    "46": "Lot",
+    "47": "Lot-et-Garonne",
+    "48": "Lozère",
+    "49": "Maine-et-Loire",
+    "50": "Manche",
+    "51": "Marne",
+    "52": "Haute-Marne",
+    "53": "Mayenne",
+    "54": "Meurthe-et-Moselle",
+    "55": "Meuse",
+    "56": "Morbihan",
+    "57": "Moselle",
+    "58": "Nièvre",
+    "59": "Nord",
+    "60": "Oise",
+    "61": "Orne",
+    "62": "Pas-de-Calais",
+    "63": "Puy-de-Dôme",
+    "64": "Pyrénées-Atlantiques",
+    "65": "Hautes-Pyrénées",
+    "66": "Pyrénées-Orientales",
+    "67": "Bas-Rhin",
+    "68": "Haut-Rhin",
+    "69": "Rhône",
+    "70": "Haute-Saône",
+    "71": "Saône-et-Loire",
+    "72": "Sarthe",
+    "73": "Savoie",
+    "74": "Haute-Savoie",
+    "75": "Paris",
+    "76": "Seine-Maritime",
+    "77": "Seine-et-Marne",
+    "78": "Yvelines",
+    "79": "Deux-Sèvres",
+    "80": "Somme",
+    "81": "Tarn",
+    "82": "Tarn-et-Garonne",
+    "83": "Var",
+    "84": "Vaucluse",
+    "85": "Vendée",
+    "86": "Vienne",
+    "87": "Haute-Vienne",
+    "88": "Vosges",
+    "89": "Yonne",
+    "90": "Territoire de Belfort",
+    "91": "Essonne",
+    "92": "Hauts-de-Seine",
+    "93": "Seine-Saint-Denis",
+    "94": "Val-de-Marne",
+    "95": "Val-d'Oise",
+    "971": "Guadeloupe",
+    "972": "Martinique",
+    "973": "Guyane",
+    "974": "La Réunion",
+    "976": "Mayotte",
+    "2AT": "Corse-du-Sud (Corse)",
+    "2BT": "Haute-Corse (Corse)"
+}
 
-# Page d'analyse interactive
-def interactive_analysis():        
-    # Liste des régions françaises métropolitaines
-    regions_francaises = [
-        'Auvergne-Rhône-Alpes',
-        'Bourgogne-Franche-Comté',
-        'Bretagne',
-        'Centre-Val de Loire',
-        'Corse',
-        'Grand Est',
-        'Hauts-de-France',
-        'Île-de-France',
-        'Normandie',
-        'Nouvelle-Aquitaine',
-        'Occitanie',
-        'Pays de la Loire',
-        'Provence-Alpes-Côte d\'Azur',
-        'Guadeloupe',
-        'Martinique',
-        'Guyane',
-        'La Réunion',
-        'Mayotte'
-    ]
+# Créer une liste des noms de départements
+departement_names = list(departements.values())
 
-    # Section pour la sélection de la région
-    st.header('Sélectionnez une région:')
-    selected_region = st.selectbox('Choisissez une région:', regions_francaises)
+# Créer une liste déroulante dans Streamlit avec les noms des départements
+selected_departement_name = st.selectbox("Sélectionnez un département", departement_names)
 
-    # Section pour la sélection du sexe et de l'âge
-    st.header('Sélectionnez le sexe et l\'âge:')
-    gender_options = ['Masculin', 'Féminin']
-    selected_gender = st.radio('Choisissez le sexe:', gender_options)
+# Convertir le nom de département en numéro en utilisant la liste departements
+selected_departement_num = [key for key, value in departements.items() if value == selected_departement_name][0]
 
-    # Affichage des résultats
-    st.write('Vous avez choisi la région:', selected_region)
-    st.write('Vous avez choisi le sexe:', selected_gender)
+# Section pour la sélection du sexe et de l'âge
+st.header('Sélectionnez votre genre:')
+gender_options = {'1':'Masculin', '0':'Féminin'}
+selected_gender_name = st.radio('Choisissez le sexe:', list(gender_options.values()))
+selected_gender_num = [key for key, value in gender_options.items() if value == selected_gender_name][0]
 
-    boutton_test = st.button("Résultat avec mes données personnelles")
+# Liste des régions françaises métropolitaines
+st.header('Sélectionnez le type de routes que vous fréquentez le plus:')
+catr_choice = {
+    "1": 'Autoroute',
+    "2": 'Route nationale',
+    "3": 'Route départementale',
+    "4": 'Voie communale',
+    "5": 'Hors réseau public',
+    "6": 'Parc de stationnement ouvert à la circulation publique',
+    "7": 'Route de métropole urbaine',
+    "9": 'Autre'
+}
+selected_catr_name = st.selectbox('Choisissez le type de route:', list(catr_choice.values()))
+selected_catr_num = [key for key, value in catr_choice.items() if value == selected_catr_name][0]
 
-    if boutton_test :
-        st.write("coucou")
 
-interactive_analysis()
+@st.cache_data
+def import_data2():
+    data2 = pd.read_csv(r"Base_dep.csv", decimal=".", sep=",")  
+    return data2
+
+data2 = import_data2()
+
+bouton_test = st.button("Résultat avec mes données personnelles")
+
+if bouton_test:
+    st.write('Vous avez choisi la région:', selected_departement_name)
+    st.write('Vous avez choisi le sexe:', selected_gender_name)
+    st.write('Vous avez choisi le type de route:', selected_catr_name)
+
+    # Filtrer les données en fonction des sélections de l'utilisateur
+    filtered_data = data2[(data2['dep'] == int(selected_departement_num)) & (data2['catr'] == int(selected_catr_num)) & (data2['homme'] == int(selected_gender_num))]
+
+    if not filtered_data.empty:
+        st.write('Dans le cas d\'un accident, vous avez', filtered_data['part_indemne'].iloc[0]*100, '% de chance de rester indemne.')
+        st.write('Dans le cas d\'un accident, vous avez', filtered_data['part_blesse_leger'].iloc[0]*100, '% de chance d\'être blessé légèrement.')
+        st.write('Dans le cas d\'un accident, vous avez', filtered_data['part_blesse_hospi'].iloc[0]*100, '% de chance d\'être blessé et hospitalisé.')
+        st.write('Dans le cas d\'un accident, vous avez', filtered_data['part_tue'].iloc[0]*100, '% de chance de ne pas rester en vie.')
+    else:
+        st.write("Aucune donnée")
 
 # Ajoutez un espace dans la barre latérale
 st.sidebar.write("Et pour les curieux :")
