@@ -186,7 +186,7 @@ def models_presentation():
     @st.cache_data
     def test_model():
         # Séparer les features et la variable cible
-        X = data[["secuexist", "age", "region2", "lum", "atm", "catr", "trajet", "equipement"]]
+        X = data[["secuexist", "age", "region2", "lum", "atm", "catr", "trajet", "equipement", "homme"]]
         y = data['grav']
 
         # Imputer les valeurs manquantes
@@ -233,7 +233,7 @@ def models_presentation():
 
         st.write("Lors de l\'observation des matrices de confusion pour chaque modèle, il est évident que les classes 0 (Indemnes) et 3 (Tués) posent un défi de prédiction significatif. Les pourcentages associés à ces classes sont notablement bas, suggérant que les modèles ont du mal à les identifier correctement. Cette difficulté peut être attribuée à une représentation limitée de ces classes dans l\'ensemble de données, ce qui rend la généralisation plus complexe.")
         st.write("En revanche, les classes 1 (Blessés Légers) et 2 (Blessés hospitalisés) bénéficient d'une prédiction plus précise, avec des pourcentages plus élevés dans les matrices de confusion. Il semble que la représentation de ces classes soit plus robuste, facilitant ainsi la tâche des modèles.")
-        st.write("En vue de prendre une décision quant au choix du modèle, il est nécessaire d'examiner les accuracies de chacun d'entre eux.")
+        st.write("En vue de prendre une décision quant au choix du modèle, il est nécessaire d'examiner les précisions de chacun d'entre eux.")
         # Vos résultats
         results = {
             "Random Forest": {"model": "RandomForestClassifier()", "accuracy": 0.5714285714285714},
@@ -254,7 +254,7 @@ def models_presentation():
         st.dataframe(df_results)
 
         # Explication sur le choix du modèle XGBoost
-        st.write("Nous optons pour le modèle XGBoost dans notre application en raison de sa précision supérieure parmi les modèles testés. Afin de simplifier l'interprétation et d'accroître la stabilité du modèle, nous avons regroupé certaines classes de gravité. Les classes 'Indemne' et 'Blessé Léger' ont été fusionnées, de même que les classes 'Blessé Hospitalisé' et 'Tué'. Nous explorerons également l'importance de chaque variable dans le modèle sélectionné.")
+        st.write("Nous optons pour le modèle XGBoost dans notre application en raison de sa précision supérieure parmi les modèles testés. Afin de simplifier l'interprétation et d'accroître la stabilité du modèle, nous allons regroupé certaines classes de gravité. Les classes 'Indemne' et 'Blessé Léger' ont été fusionnées, de même que les classes 'Blessé Hospitalisé' et 'Tué'. Nous explorerons également l'importance de chaque variable dans le modèle sélectionné.")
 
         # Entraîner le modèle XGBoost
         xgb_model = models['XGBoost']
@@ -266,14 +266,14 @@ def models_presentation():
         # Afficher les importances des variables pour le modèle choisi (XGBoost)
         chosen_model_importances = importances_df['XGBoost']
         # Afficher un graphique à barres pour les importances des variables du modèle choisi (XGBoost)
-        fig1 = px.bar(x=chosen_model_importances.index, y=chosen_model_importances.values, title='Test')
+        fig1 = px.bar(x=chosen_model_importances.index, y=chosen_model_importances.values, title='Importance des variables explicatives utilisées pour le modèle XGBoost')
         fig1.update_layout(
             plot_bgcolor="rgba(0,0,0,0)",
             xaxis=dict(showgrid=False, title='Caractéristiques'),
             yaxis=dict(showgrid=False, title='Importance')
         )
         st.plotly_chart(fig1, use_container_width=True, figsize=(10, 6))
-        st.write("Nous notons que les variables 'Région' (régions françaises) et 'Catr' (type de route) se démarquent comme les plus cruciales dans notre modèle XGBoost. Nous prévoyons de les maintenir pour la suite de l'analyse. De plus, les variables 'Âge' (âges des personnes accidentées) et 'Trajet' (types de trajet effectués) démontrent une importance légèrement supérieure par rapport aux autres variables, justifiant ainsi leur conservation.")
+        st.write("Nous notons que les variables 'Région' (régions françaises) et 'Catr' (type de route) se démarquent comme les plus cruciales dans notre modèle XGBoost. Nous prévoyons de les maintenir pour la suite de l'analyse.")
 
     test_model()
     
@@ -282,7 +282,7 @@ def models_presentation():
     @st.cache_data
     def xgboost_merged_classes():
         # Séparer les features et la variable cible
-        X = data[['age', 'region2', 'catr', 'trajet']]
+        X = data[['region2', 'catr', "homme"]]
         y = data['grav']
 
         # Fusionner les classes 0 et 1 en une seule classe (classe 0)
@@ -323,14 +323,22 @@ def models_presentation():
         accuracy = accuracy_score(y_test, y_pred)
         st.write("Avec cette combinaison d'hyperparamètres, nous obtenons l'accuracy suivante : ")
         st.write(accuracy)
-        st.write("Nous constatons que la précision de notre modèle XGBoost, une fois optimisé, a augmenté de 10 points par rapport à la version non optimisée. Ainsi, nous atteignons désormais une précision d'environ 73%, ce qui se traduit par la capacité du modèle à correctement classer 73 individus sur 100.")
+        st.write("Nous constatons que la précision de notre modèle XGBoost, une fois optimisée, a augmenté de 10 points par rapport à la version non optimisée. Ainsi, nous atteignons désormais une précision d'environ 73%, ce qui se traduit par la capacité du modèle à correctement classer 73 individus sur 100.")
         st.write("Afin de confirmer notre choix, intéressons nous à la matrice de confusion :")
+
         # Afficher la matrice de confusion
         conf_matrix = confusion_matrix(y_test, y_pred)
-        st.write(conf_matrix)
+        # Affichage de la matrice de confusion sous forme de heatmap
+        total_per_class = conf_matrix.sum(axis=1)
+        conf_matrix_percentage = (conf_matrix.T / total_per_class).T * 100
+        # Réduire la taille de la figure
+        fig, ax = plt.subplots(figsize=(3, 2))
+        sns.heatmap(conf_matrix_percentage, annot=True, fmt='.2f', cmap='Blues', cbar=False, ax=ax)
+        ax.set_xlabel('Valeurs Prédites')
+        ax.set_ylabel('Valeurs Réelles')
+        st.pyplot(fig)
         st.write("Le choix de notre modèle s'est avéré judicieux, comme le démontre la matrice de confusion. Cette dernière offre une visualisation claire de la performance du modèle en mettant en évidence un grand nombre de prédictions correctes et un nombre limité d'erreurs de prédiction. Les résultats indiquent une capacité significative du modèle à bien classifier les différentes classes de gravité des accidents de vélo. Nous observons une prépondérance de prédictions précises, illustrant ainsi la robustesse et la fiabilité de notre approche.")
     xgboost_merged_classes()
-    
 
 # Page d'analyse interactive
 def interactive_analysis():        
@@ -365,17 +373,9 @@ def interactive_analysis():
     gender_options = ['Masculin', 'Féminin']
     selected_gender = st.radio('Choisissez le sexe:', gender_options)
 
-    # Créez une liste d'âges de 1 à 120 ans
-    age_options = list(range(1, 121))
-    # Ajoutez une option pour tous les âges
-    age_options.insert(0, 'Tous les âges')
-    # Affichez la liste déroulante pour la sélection de l'âge
-    selected_age = st.selectbox('Choisissez une tranche d\'âge:', age_options)
-
     # Affichage des résultats
     st.write('Vous avez choisi la région:', selected_region)
     st.write('Vous avez choisi le sexe:', selected_gender)
-    st.write('Vous avez choisi la tranche d\'âge:', selected_age)
 
     boutton_test = st.button("Résultat avec mes données personnelles")
 
@@ -404,6 +404,7 @@ if button_clicked:
     st.write("- Type de Route (catr) : La catégorie de route où l'accident s'est produit.")
     st.write("- Type de Trajet (trajet) : Le type de trajet effectué par les individus (domicile-travail, domicile-école, etc.).")
     st.write("- Équipement (equipement) : Les équipements spécifiques utilisés lors de l'accident.")
+    st.write("- Homme (sexe) : Genre de l'individu accidenté.")
     st.header("Observons les résultats des différents modèles testés (KNN, SVM, Random Forest et XGBoost)")
     # Display the content of models presentation
     models_presentation()
