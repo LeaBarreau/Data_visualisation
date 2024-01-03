@@ -273,7 +273,7 @@ def test_model():
         yaxis=dict(showgrid=False, title='Importance')
     )
     st.plotly_chart(fig1, use_container_width=True, figsize=(10, 6))
-    st.write("Nous notons que les variables 'Région' (régions françaises) et 'Catr' (type de route) se démarquent comme les plus cruciales dans notre modèle XGBoost. Nous prévoyons de les maintenir pour la suite de l'analyse.")
+    st.write("Nous notons que les variables 'Dep' (départements français) et 'Catr' (type de route) se démarquent comme les plus cruciales dans notre modèle XGBoost. Nous prévoyons de les maintenir pour la suite de l'analyse.")
     st.write("Nous avons choisi d'utiliser un modèle XGBoost, en raison de sa capacité à traiter des ensembles de données complexes et à fournir des prédictions précises. Après l'entraînement initial, nous allons optimisé les paramètres du modèle pour améliorer sa précision. Pour ce faire, nous allons tester plusieurs combinaisons d'hyperparamètres et conserver celle qui maximise la précision de notre modèle (accuracy)")
 
 # Séparer les features et la variable cible
@@ -499,9 +499,9 @@ if bouton_test:
     # Affichez la classe prédite
     st.write("En fonction des sélections effectuées, le modèle de machine learning prédit la classe :", predicted_class)
     if predicted_class == 0 :
-        st.write("En d'autres termes, selon vos caractéristiques, notre modèle de machine learning prédit la classe 0. Cela signifie que qu'il prévoit qu'en cas d'accident, vous resterez indemne ou vous serez blessé légèrement. Restez prudent ! ")
+        st.write("En d'autres termes, selon vos caractéristiques, notre modèle de machine learning prédit la classe 0. Cela signifie qu'en cas d'accident, il prévoit que vous resterez indemne ou vous serez blessé légèrement. Restez prudent ! ")
     else :
-        st.write("En d'autres termes, selon vos caractéristiques, notre modèle de machine learning prédit la classe 1. Cela signifie que qu'il prévoit qu'en cas d'accident, vous serez blessé gravement ou vous perdrez la vie. Restez prudent ! ")
+        st.write("En d'autres termes, selon vos caractéristiques, notre modèle de machine learning prédit la classe 1. Cela signifie qu'en cas d'accident, il prévoit que vous serez blessé gravement ou vous perdrez la vie. Restez prudent ! ")
 
     st.write("En plus de cela, nous avons quelques autres statistiques selon les caractéristiques inscrites :")
 
@@ -514,7 +514,7 @@ if bouton_test:
         st.write('Dans le cas d\'un accident, vous avez', filtered_data['part_blesse_hospi'].iloc[0]*100, '% de chance d\'être blessé et hospitalisé.')
         st.write('Dans le cas d\'un accident, vous avez', filtered_data['part_tue'].iloc[0]*100, '% de chance de ne pas rester en vie.')
     else:
-        st.write("Aucune donnée supplémentaire, désolées :)")
+        st.write("Aucune donnée supplémentaire, nous sommes désolées :)")
 
 # Ajoutez un espace dans la barre latérale
 st.sidebar.write("Et pour les curieux :")
