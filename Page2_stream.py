@@ -15,7 +15,7 @@ from folium.plugins import MarkerCluster
 # Définissez la largeur de la page Streamlit
 st.set_page_config(layout="wide")
 
-st.title("La sécurité routière, même à vélo !")
+st.title("Restez vigilant, même à vélo !")
 st.write("Bienvenue sur notre page dédiée à la sécurité routière, où vous avez le pouvoir de découvrir et d'analyser les statistiques d'accidents de vélo spécifiques à votre région. Choisissez votre zone géographique et plongez-vous dans des données détaillées qui vous permettront de comprendre les tendances, les risques et les initiatives de sécurité routière adaptées à votre environnement local.")
 st.write("Sélectionnez votre région ci-dessous pour accéder à des visualisations interactives, des graphiques informatifs et des analyses approfondies, vous permettant ainsi de prendre des décisions éclairées pour une conduite plus sûre. Ensemble, travaillons à créer des communautés où chaque cycliste peut circuler en toute confiance, en bénéficiant d'une route plus sûre et adaptée à ses besoins spécifiques.")
 st.write("Votre sécurité routière à vélo commence ici, en vous informant !")
@@ -213,7 +213,7 @@ st.write("- Un nombre plus important de décès hors agglomération souligne la 
 
 
 # Titre intermédiaire
-st.subheader("Mesdames, vous semblez plus prudentes que messieurs")
+st.subheader("Mesdames, vous semblez plus prudentes que ces messieurs")
 
 # Groupez les données par sexe et gravité
 df_sankeysexe = df_filtre.groupby(['sexe', 'grav']).size().reset_index(name='count')
@@ -238,16 +238,16 @@ figsexe = go.Figure(go.Sankey(
         value=df_sankeysexe['count']
     )
 ))
-figsexe.update_layout(title="Relation entre le sexe et la gravité en fonction du nombre d'accidents")
+figsexe.update_layout(title="Relation entre le genre et la gravité du sinistre en fonction du nombre d'accidents")
 # Affichez le diagramme dans Streamlit
 st.plotly_chart(figsexe)
 
-st.write("Plusieurs observations selon le sexe des conducteurs peuvent être soulignées:")
+st.write("Plusieurs observations selon le genre des conducteurs peuvent être soulignées:")
 st.write("- Mesdames, une tendance à la prudence est notable, se manifestant par une proportion plus faible de tous types d'accidents.")
 st.write("- Messieurs, la fréquence accrue d'accidents notamment graves souligne l'importance de la vigilance sur la route. Une attention particulière est nécessaire pour réduire la proportion élevée de décès et d'accidents graves chez les conducteurs masculins.")
 
 # Titre intermédiaire
-st.subheader("Même en promenade à vélo et qu'importe l'âge, restez vigilents")
+st.subheader("Même en promenade et qu'importe l'âge, restez vigilants")
 
 # Contenu de la première section
 st.write("Que vous soyez en promenade loisirs, en trajet domicile-travail ou pour toute autre raison, la sécurité à vélo est cruciale. Explorez ci-dessous le nombre d'accidents en fonction de l'âge et du type de trajet effectué.")
@@ -312,11 +312,11 @@ with Q4:
     st.plotly_chart(fig_age_gravity, use_container_width=True)
 
 # Commentaire sur le graphique
-st.write("L'analyse de ces différents graphiques révèle plusieurs tendances importantes qu'importe la région étudiée:")
+st.write("L'analyse de ces différents graphiques révèle plusieurs tendances importantes quelque soit la région étudiée:")
 st.write("- Les accidents sont plus fréquents lors de promenades-loisirs et concernent principalement les 15-20 ans et les plus de 60 ans")
 st.write("- La part des personnes décédée lors d'un accident de vélo est plus importante pour les plus de 60 ans")
 
-st.subheader("Quelle est l'heure à laquelle a-t-on le plus de chance d'avoir un accident de vélo ?")
+st.subheader("A quelle heure a-t-on le plus de chance d'avoir un accident de vélo ?")
 # Convertissez-les en datetime complet en ajoutant une date factice
 df_filtre['heure'] = pd.to_datetime(df_filtre['hrmn'].apply(lambda x: pd.Timestamp.combine(pd.to_datetime('today').date(), x)))
 # Créez une nouvelle colonne 'heure_du_jour' qui contient uniquement l'heure de chaque accident
@@ -342,7 +342,7 @@ fig_heure.update_layout(plot_bgcolor="rgba(0,0,0,0)",
                                                 title='Nombre d\'accidents')))
 # Affichez l'histogramme dans Streamlit
 st.plotly_chart(fig_heure, use_container_width=True)
-st.write("Nous remarquons que la majorité des accidents de vélo ont eu lieu entre 10h et 19h avec un pic entre 16h et 18h.  Les heures entre 16h et 18h correspondent généralement aux heures de pointe dans de nombreuses régions.")
+st.write("Nous remarquons que la majorité des accidents de vélo ont eu lieu entre 10h et 19h avec un pic entre 16h et 18h. Cette dernière plage horraire correspond généralement aux heures de pointe dans de nombreuses régions.")
 
 # Titre intermédiaire
 st.subheader("L'été, une période à haut risque : zoom sur votre région")
@@ -367,7 +367,7 @@ fig4.update_layout(plot_bgcolor = "rgba(0,0,0,0)",
                                                     title='Nombre d\'accidents')))
 st.plotly_chart(fig4,use_container_width=True)
 
-st.write("L'analyse révèle une saisonnalité marquée, avec une augmentation notable du nombre d'accidents pendant les mois estivaux. Cette tendance à la hausse en été peut être explorée plus en détail sur la carte interactive ci-dessous. Utilisez le curseur pour sélectionner le mois et l'année entre janvier 2015 et décembre 2021 et examinez les variations mensuelles des accidents dans votre région. Vous pouvez cliquer sur les marqueurs colorés et ceux-ci vous indiqueront le sexe et l'âge de la personne accidentée.")
+st.write("L'analyse révèle une saisonnalité marquée, avec une augmentation notable du nombre d'accidents pendant les mois estivaux. Cette tendance à la hausse en été peut être explorée plus en détail sur la carte interactive ci-dessous. Utilisez le curseur pour sélectionner le mois et l'année entre janvier 2015 et décembre 2021 et examinez les variations mensuelles des accidents dans votre région. Vous pouvez cliquer sur les marqueurs colorés et ceux-ci vous indiqueront le genre et l'âge de la personne accidentée.")
 
 ##CARTE
 from datetime import datetime, timedelta
