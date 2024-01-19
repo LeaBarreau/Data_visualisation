@@ -152,7 +152,7 @@ def première_page():
         st.write("74 689 accidents de vélo recensés mais combien sont restés indemnes ?")
         C7, C8, C9, C10 = st.columns(4)
         with C7 :
-            st.image("indemne.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+            st.image("Images\indemne.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
             st.write(datamoy.loc[datamoy['grav'] == 'Indemne', 'nb_accidents'].values[0])
         with C8 :
             st.image("Blésser léger.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
