@@ -8,7 +8,7 @@ add_page_title("Restez vigilant, même à vélo !")
 pages = [
     Page("Page1_stream.py", "Quelques statistiques générales", "🚴‍♂️"),
     Page("Page2_stream.py", "Qu'en est-il dans votre région ?", "🗺️"),
-    Page("Page3_stream.py", "Vos statistiques personnalisées ?", "📊")
+    Page("Page3_stream.py", "Vos statistiques personnalisées", "📊")
 ]
 
 # Affichez les pages dans la barre latérale
