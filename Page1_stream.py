@@ -168,7 +168,7 @@ def première_page():
         st.write("Selon les statistiques, quel jour et à quelle heure y-t-il eu le plus d'accidents de vélos ?")
         C2, C3, C4, C5 = st.columns(4)
         with C2 :
-            st.image("Images\Année.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+            st.image("Images\Imannée.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
             st.write(data['an'].mode().values[0])
         with C3 :
             st.image("Images\mois.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
