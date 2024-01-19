@@ -254,7 +254,7 @@ def test_model():
     st.dataframe(df_results)
 
     # Explication sur le choix du modèle XGBoost
-    st.write("Nous optons pour le modèle XGBoost dans notre application en raison de sa précision supérieure parmi les modèles testés. Afin de simplifier l'interprétation et d'accroître la stabilité du modèle, nous allons regroupé certaines classes de gravité. Les classes 'Indemne' et 'Blessé Léger' ont été fusionnées, de même que les classes 'Blessé Hospitalisé' et 'Tué'. Nous explorerons également l'importance de chaque variable dans le modèle sélectionné.")
+    st.write("Nous optons pour le modèle XGBoost dans notre application en raison de sa précision supérieure parmi les modèles testés. Afin de simplifier l'interprétation et d'accroître la stabilité du modèle, nous allons regrouper certaines classes de gravité. Les classes 'Indemne' et 'Blessé Léger' ont été fusionnées, de même que les classes 'Blessé Hospitalisé' et 'Tué'. Nous explorerons également l'importance de chaque variable dans le modèle sélectionné.")
 
     # Entraîner le modèle XGBoost
     xgb_model = models['XGBoost']
@@ -512,7 +512,7 @@ if bouton_test:
         st.write('Dans le cas d\'un accident, vous avez', filtered_data['part_indemne'].iloc[0]*100, '% de chance de rester indemne.')
         st.write('Dans le cas d\'un accident, vous avez', filtered_data['part_blesse_leger'].iloc[0]*100, '% de chance d\'être blessé légèrement.')
         st.write('Dans le cas d\'un accident, vous avez', filtered_data['part_blesse_hospi'].iloc[0]*100, '% de chance d\'être blessé et hospitalisé.')
-        st.write('Dans le cas d\'un accident, vous avez', filtered_data['part_tue'].iloc[0]*100, '% de chance de ne pas rester en vie.')
+        st.write('Dans le cas d\'un accident, vous avez', filtered_data['part_tue'].iloc[0]*100, '% de chance de perdre la vie.')
     else:
         st.write("Aucune donnée supplémentaire, nous sommes désolées :)")
 
@@ -526,7 +526,7 @@ button_clicked = st.sidebar.button("Découvrez et comprenez notre modèle")
 if button_clicked:
     st.title("Comprenons ensemble le modèle utilisé et l'optimisation de celui-ci !")
     st.header("Objectif du Modèle : ")
-    st.write("Le modèle que nous avons développé a pour objectif de prédire la gravité des accidents de vélo en se basant sur divers facteurs. La gravité des accidents est classée en quatre catégories : indemne, blessé léger, blessé hospitalisé, et tué. Comprendre la gravité des accidents peut nous aider à identifier les principaux contributeurs aux incidents graves, ce qui à son tour peut informer des mesures de sécurité ciblées pour réduire les risques sur nos routes.")
+    st.write("Le modèle que nous avons développé a pour objectif de prédire la gravité des accidents de vélo en se basant sur divers facteurs. La gravité des accidents est classée en quatre catégories : indemne, blessé léger, blessé hospitalisé, et tué. Comprendre la gravité des accidents passés peut nous aider à identifier les principaux contributeurs aux incidents graves, ce qui à son tour peut informer des mesures de sécurité ciblées pour réduire les risques futurs sur nos routes.")
     st.header("Variables Utilisées : ")
     st.write(" - Securité Existante (secuexist) : Représente les équipements de sécurité portés par les individus impliqués dans l'accident (casque, ceinture, etc.).")
     st.write("- Âge (age) : L'âge des personnes impliquées dans l'accident.")
