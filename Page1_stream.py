@@ -23,9 +23,9 @@ from pandas import merge
 # Définissez la largeur de la page Streamlit
 st.set_page_config(layout="wide")
 
-st.title("La sécurité routière, même à vélo !")
+st.title("Restez vigilant, même à vélo !")
 st.write("Bienvenue sur notre application dédiée à la sensibilisation aux accidents de vélo sur une période allant de 2005 à 2021. Face à la préoccupation croissante pour la sécurité des cyclistes, notre plateforme a pour objectif de fournir une compréhension approfondie des incidents impliquant des vélos au cours des dernières années.")
-st.write("Grâce à des données exhaustives recueillies sur une période de 16 ans, notre application offre une vision panoramique des tendances, des facteurs de risque et des zones géographiques les plus touchées par les accidents de vélo. Nous mettons l'accent sur l'éducation et la sensibilisation, visant à réduire le nombre d'incidents en fournissant des informations clés aux cyclistes, aux autorités locales et à la communauté en général.")
+st.write("Grâce à des données exhaustives recueillies sur une période de 16 ans, notre application offre une vision panoramique des tendances, des facteurs de risque et des zones géographiques les plus touchées par les accidents de vélo. Nous mettons l'accent sur l'information et la sensibilisation, visant à réduire le nombre d'incidents en fournissant des données clés aux cyclistes, aux autorités locales et à la communauté en général.")
 st.write("Explorez des visualisations interactives, des cartes informatives et des analyses approfondies pour comprendre les causes sous-jacentes des accidents de vélo, les heures critiques, les types de voies les plus à risque, et bien plus encore. Ensemble, travaillons vers des solutions durables pour promouvoir la sécurité des cyclistes et minimiser les risques sur nos routes.")
 
 # Utilisez pd.read_excel() pour lire le fichier Excel dans un DataFrame
@@ -168,7 +168,7 @@ def première_page():
         st.write("Selon les statistiques, quel jour et à quelle heure y-t-il eu le plus d'accidents de vélos ?")
         C2, C3, C4, C5 = st.columns(4)
         with C2 :
-            st.image("Images\année.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+            st.image("Images\Année.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
             st.write(data['an'].mode().values[0])
         with C3 :
             st.image("Images\mois.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
@@ -183,7 +183,7 @@ def première_page():
     # Titre intermédiaire
     st.subheader("L'année 2018, un tournant")
     # Contenu de la première section
-    st.write("L'année 2018 marque un tournant significatif dans la sécurité des cyclistes, avec une nette diminution du nombre d'accidents enregistrés. Plusieurs facteurs clés ont contribué à cette amélioration notable, démontrant l'impact positif des initiatives axées sur la sécurité routière et la sensibilisation.")
+    st.write("L'année 2018 marque un tournant significatif pour la sinistralité vélo, avec une nette diminution du nombre d'accidents enregistrés. Plusieurs facteurs clés ont contribué à cette amélioration notable, démontrant l'impact positif des initiatives axées sur la sécurité routière.")
     st.write("Continuons dans ce sens!")
     Q1,Q2 = st.columns(2)
     with Q1:
@@ -201,7 +201,7 @@ def première_page():
                                                         title='Nombre d\'accidents')))
         st.plotly_chart(figQ1,use_container_width=True, figsize=(10, 6))
 
-        st.write("Nous observons avec persistance que la répartition des niveaux de gravité des accidents reste constante au fil des années, soulignant la nécessité d'approches continues en matière de sécurité routière pour maintenir cette stabilité relativement positive.")
+        st.write("Comme vous pouvez le voir, la répartition des niveaux de gravité des accidents reste constante au fil des années, soulignant les besoins constants de protection et de sensibilisation en matière de sécurité routière.")
     st.text("    ")
     with Q2:
         dfQ2 = data.groupby(by = ['grav'])['Num_Acc'].count().reset_index()
@@ -225,7 +225,7 @@ def première_page():
     # Créez la carte avec des marqueurs colorés en fonction de la gravité et centrez-la sur la moyenne des coordonnées
     st.map(data_carte, latitude='lat', longitude='long', size='size', color = 'couleur', zoom=4.5, use_container_width=True)
     st.write("Trois observations principales émergent de la carte géographique :")
-    st.write("- 'Diagonale du Vide': Une tendance notable se dégage le long de la 'Diagonale du Vide', indiquant une région où les accidents de vélo sont nettement moins fréquents. Cette configuration peut résulter de divers facteurs, tels que des infrastructures cyclables bien entretenues, une faible densité de population, ou d'autres conditions propices à la sécurité des cyclistes.")
+    st.write("- 'Diagonale du Vide': Une tendance notable se dégage le long de la 'Diagonale du Vide', indiquant une région où les accidents de vélo sont nettement moins fréquents. Cette configuration peut résulter de divers facteurs, tels que des infrastructures bien entretenues, une faible densité de population, ou d'autres conditions propices à la sécurité des cyclistes.")
     st.write("- Foyer d'Accidents dans les Grandes Villes : Les grandes métropoles telles que Paris, Lyon et Bordeaux présentent une concentration significative d'accidents. Cette observation est probablement liée à une densité de population plus élevée, à des réseaux de transport complexes et à une cohabitation intense entre divers modes de déplacement.")
     st.write("- Risques le Long des Côtes : Les zones côtières montrent des incidents plus fréquents, influencés par des conditions géographiques spécifiques. Bien que des pistes cyclables attrayantes puissent encourager la pratique du vélo, elles peuvent également accroître les risques.")
     st.subheader("Quelles sont les conditions les plus probables d'un accident ?")
