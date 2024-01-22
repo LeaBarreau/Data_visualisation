@@ -136,32 +136,32 @@ def première_page():
         st.write("74 689 accidents de vélo recensés mais combien sont restés indemnes ?")
         C7, C8, C9, C10 = st.columns(4)
         with C7 :
-            st.image("Images\indemne.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+            st.image("indemne.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
             st.write(datamoy.loc[datamoy['grav'] == 'Indemne', 'nb_accidents'].values[0])
         with C8 :
-            st.image("Images\Blésser léger.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+            st.image("Blésser léger.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
             st.write(datamoy.loc[datamoy['grav'] == 'Blessé léger', 'nb_accidents'].values[0])
         with C9 :
-            st.image("Images\Blésser hospitalisés.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+            st.image("Blésser hospitalisés.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
             st.write(datamoy.loc[datamoy['grav'] == 'Blessé hospitalisé', 'nb_accidents'].values[0])
         with C10 :
-            st.image("Images\mort.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+            st.image("mort.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
             st.write(datamoy.loc[datamoy['grav'] == 'Tué', 'nb_accidents'].values[0])
         st.write("")
     with T2 :
         st.write("Selon les statistiques, quel jour et à quelle heure y-t-il eu le plus d'accidents de vélos ?")
         C2, C3, C4, C5 = st.columns(4)
         with C2 :
-            st.image("Images\Imannée.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+            st.image("Imannée.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
             st.write(data['an'].mode().values[0])
         with C3 :
-            st.image("Images\mois.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+            st.image("mois.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
             st.write(data['mois'].mode().values[0])
         with C4 :
-            st.image("Images\jours.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+            st.image("jours.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
             st.write(data['jour'].mode().values[0])
         with C5 :
-            st.image("Images\heure.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
+            st.image("heure.png", caption=None, width=80, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
             st.write(data['hrmn'].mode().values[0])
         st.write("")
     # Titre intermédiaire
