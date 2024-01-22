@@ -6,6 +6,7 @@ import pandas as pd
 import streamlit as st
 from streamlit_folium import folium_static
 import plotly.graph_objects as go
+from unidecode import unidecode
 
 # Définissez la largeur de la page Streamlit
 st.set_page_config(layout="wide")
