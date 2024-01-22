@@ -1,31 +1,18 @@
 import pandas 
-import folium
 import streamlit as st
 import matplotlib.pyplot as plt
-import plotly.express as px
-import pandas as pd
-import streamlit as st
-from streamlit_folium import st_folium
-from streamlit_folium import folium_static
-import plotly.graph_objects as go
-import geopandas as gpd
-from streamlit_folium import folium_static
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, r2_score
+from sklearn.metrics import accuracy_score
 from sklearn.svm import SVC
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import LabelEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
-import shap
 import plotly.express as px
 from sklearn.neighbors import KNeighborsClassifier
 from xgboost import XGBClassifier
-from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import StratifiedShuffleSplit
 
 # Définissez la largeur de la page Streamlit
 st.set_page_config(layout="wide")

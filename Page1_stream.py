@@ -1,24 +1,8 @@
 import pandas 
-import folium
 import streamlit as st
-import matplotlib.pyplot as plt
 import plotly.express as px
-import pandas as pd
 import streamlit as st
-from streamlit_folium import st_folium
-from streamlit_folium import folium_static
-import plotly.graph_objects as go
-import geopandas as gpd
-from streamlit_folium import folium_static
-from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
-import nltk
-from nltk.tokenize import word_tokenize
-import random
-import seaborn as sns
-from folium.plugins import HeatMap
-import geoviews as gv
-import geopandas as gpd
-from pandas import merge
+#from wordcloud import WordCloud
 
 # Définissez la largeur de la page Streamlit
 st.set_page_config(layout="wide")
@@ -228,8 +212,8 @@ def première_page():
     st.write("- 'Diagonale du Vide': Une tendance notable se dégage le long de la 'Diagonale du Vide', indiquant une région où les accidents de vélo sont nettement moins fréquents. Cette configuration peut résulter de divers facteurs, tels que des infrastructures bien entretenues, une faible densité de population, ou d'autres conditions propices à la sécurité des cyclistes.")
     st.write("- Foyer d'Accidents dans les Grandes Villes : Les grandes métropoles telles que Paris, Lyon et Bordeaux présentent une concentration significative d'accidents. Cette observation est probablement liée à une densité de population plus élevée, à des réseaux de transport complexes et à une cohabitation intense entre divers modes de déplacement.")
     st.write("- Risques le Long des Côtes : Les zones côtières montrent des incidents plus fréquents, influencés par des conditions géographiques spécifiques. Bien que des pistes cyclables attrayantes puissent encourager la pratique du vélo, elles peuvent également accroître les risques.")
-    st.subheader("Quelles sont les conditions les plus probables d'un accident ?")
-    st.write("Etudions les conditions (lumière, mois, conditions atmosphériques, équipements, ...) les plus probables pour un accident de vélo")
+    #st.subheader("Quelles sont les conditions les plus probables d'un accident ?")
+    #st.write("Etudions les conditions (lumière, mois, conditions atmosphériques, équipements, ...) les plus probables pour un accident de vélo")
     # Concaténation des colonnes pertinentes
     data["Full"] = (
         data["lum"].astype(str) + " " +
@@ -240,23 +224,23 @@ def première_page():
         data["equipement"].astype(str)
     )
     # Fonction de prétraitement du texte
-    def preprocess_text(text):
+    #def preprocess_text(text):
         # Ajoutez d'autres étapes de prétraitement si nécessaire
-        return text.lower()
+    #    return text.lower()
     # Fonction pour afficher le nuage de mots
-    def show_wordcloud_from_column(data, column_name):
-        texte_original = ' '.join(data[column_name].astype(str))
-        texte_preprocessed = preprocess_text(texte_original)
+    #def show_wordcloud_from_column(data, column_name):
+    #    texte_original = ' '.join(data[column_name].astype(str))
+    #    texte_preprocessed = preprocess_text(texte_original)
         # Utiliser un ensemble pour stocker les mots uniques
-        mots_uniques = set(texte_preprocessed.split())
-        exclure_mots = ['légère','sans','2rm', '3rm', 'aucun','deux','véhicule', 'avec', 'd', 'du', 'de', 'la', 'des', 'le', 'et', 'est', 'elle', 'une', 'en', 'que', 'aux', 'qui', 'ces', 'les', 'dans', 'sur', 'l', 'un', 'pour', 'par', 'il', 'ou', 'à', 'ce', 'a', 'sont', 'cas', 'plus', 'leur', 'se', 's', 'vous', 'au', 'c', 'aussi', 'toutes', 'autre', 'comme', "non", "nan", "null"]
+    #    mots_uniques = set(texte_preprocessed.split())
+    #    exclure_mots = ['légère','sans','2rm', '3rm', 'aucun','deux','véhicule', 'avec', 'd', 'du', 'de', 'la', 'des', 'le', 'et', 'est', 'elle', 'une', 'en', 'que', 'aux', 'qui', 'ces', 'les', 'dans', 'sur', 'l', 'un', 'pour', 'par', 'il', 'ou', 'à', 'ce', 'a', 'sont', 'cas', 'plus', 'leur', 'se', 's', 'vous', 'au', 'c', 'aussi', 'toutes', 'autre', 'comme', "non", "nan", "null"]
         # Générer le nuage de mots à partir des mots uniques
-        wordcloud = WordCloud(width=800, height=400, background_color='black', stopwords=exclure_mots, max_words=100).generate(' '.join(mots_uniques))
-        container = st.container()
-        with container:
-            st.image(wordcloud.to_image())
+    #    wordcloud = WordCloud(width=800, height=400, background_color='black', stopwords=exclure_mots, max_words=100).generate(' '.join(mots_uniques))
+    #    container = st.container()
+    #    with container:
+    #        st.image(wordcloud.to_image())
     # Affichez le nuage de mots pour la colonne sélectionnée
-    show_wordcloud_from_column(data, "Full")
-    st.write("Il est observé que le terme 'collision' est dominant, indiquant que la plupart des accidents de vélo impliquent des collisions. De plus, les termes 'arrière', 'côté', 'vent', et 'animal' se distinguent particulièrement. En outre, en ce qui concerne les mois, 'mai' et 'octobre' semblent notables.")
+    #show_wordcloud_from_column(data, "Full")
+    #st.write("Il est observé que le terme 'collision' est dominant, indiquant que la plupart des accidents de vélo impliquent des collisions. De plus, les termes 'arrière', 'côté', 'vent', et 'animal' se distinguent particulièrement. En outre, en ce qui concerne les mois, 'mai' et 'octobre' semblent notables.")
 
 première_page()
