@@ -2,6 +2,7 @@ import pandas
 import streamlit as st
 import plotly.express as px
 import streamlit as st
+from st_pages import Page, show_pages, add_page_title
 #from wordcloud import WordCloud
 
 # Définissez la largeur de la page Streamlit

@@ -1,4 +1,5 @@
-import pandas 
+import pandas
+from st_pages import Page, show_pages, add_page_title
 import folium
 import streamlit as st
 import plotly.express as px

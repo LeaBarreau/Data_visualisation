@@ -1,4 +1,5 @@
 import pandas 
+from st_pages import Page, show_pages, add_page_title
 import streamlit as st
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
