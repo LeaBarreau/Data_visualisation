@@ -14,6 +14,7 @@ import plotly.express as px
 from sklearn.neighbors import KNeighborsClassifier
 from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score
+import sklearn
 
 # Définissez la largeur de la page Streamlit
 st.set_page_config(layout="wide")
