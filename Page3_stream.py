@@ -1,5 +1,4 @@
 import pandas 
-from st_pages import Page, show_pages, add_page_title
 import streamlit as st
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
@@ -16,6 +15,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score
 import sklearn
+import pandas as pd
 
 # Définissez la largeur de la page Streamlit
 st.set_page_config(layout="wide")
@@ -161,102 +161,75 @@ def import_data():
         'La Réunion': 17,
         'Mayotte': 18
     }
-
     # Appliquer la correspondance à la colonne 'region' de votre DataFrame
     data['region2'] = data['region'].map(region_mapping)
-    
     data['grav'] = 0*data['indemne'] + 2*data['blesse_hospi'] + 1*data['hospi_leger'] + 3*data['tue']
     data['equipement'] = data['equipement'].apply(lambda x: eval(x) if isinstance(x, str) else x)
-
     return data
 
 data = import_data()
 
 @st.cache_data
-def test_model():
-    # Séparer les features et la variable cible
-    #X = data[["secuexist", "age", "region2", "lum", "atm", "catr", "trajet", "equipement", "homme"]]
-    X = data[["secuexist", "age", "dep", "lum", "atm", "catr", "trajet", "equipement", "homme"]]
-    y = data['grav']
+def model(X_train, y_train, X_test, y_test):
+    @st.cache_data
+    def test_model(X_train, X_test, y_train, y_test):
+        models = {
+            'Random Forest': RandomForestClassifier(),
+            'KNN': KNeighborsClassifier(),
+            'XGBoost': XGBClassifier(),
+            'SVM': SVC()
+        }
+        accuracies = {}
+        matrices = {}
 
-    # Imputer les valeurs manquantes
-    imputer = SimpleImputer(strategy='most_frequent')
-    X_imputed = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
+        for model_name, model in models.items():
+            model.fit(X_train, y_train.values.ravel())
+            y_pred = model.predict(X_test)
+            accuracy = accuracy_score(y_test, y_pred)
+            accuracies[model_name] = accuracy
+            conf_matrix = confusion_matrix(y_test, y_pred)
+            matrices[model_name] = conf_matrix
+        
+        return accuracies, matrices
 
-    # Diviser les données en ensembles d'entraînement et de test avec stratification
-    X_train, X_test, y_train, y_test = train_test_split(X_imputed, y, test_size=0.2, random_state=42, stratify=y)
-    models = {
-        'Random Forest': RandomForestClassifier(),
-        'KNN': KNeighborsClassifier(),
-        'XGBoost': XGBClassifier(),
-        'SVM': SVC()
-    }
-    # Créer un DataFrame pour stocker les importances de chaque modèle
-    importances_df = pd.DataFrame(index=X_imputed.columns)
-    # Boucle pour entraîner et évaluer chaque modèle
-    # Entraîner et évaluer les modèles
-    results = {}
-    class_accuracies = {}
-    for model_name, model in models.items():
-        model.fit(X_train, y_train.values.ravel())
-        y_pred = model.predict(X_test)
-        accuracy = accuracy_score(y_test, y_pred)
-        conf_matrix = confusion_matrix(y_test, y_pred)
-        class_accuracy = conf_matrix.diagonal() / conf_matrix.sum(axis=1)
-        results[model_name] = {'model': model, 'accuracy': accuracy}
-        class_accuracies[model_name] = {'class_accuracy': class_accuracy}
+    @st.cache_data
+    def calculate_variable_importance(X_train, y_train):
+        xgb_model = XGBClassifier()
+        xgb_model.fit(X_train, y_train.values.ravel())
+        importances_df = pd.DataFrame(index=X_train.columns)
+        importances_df['XGBoost'] = xgb_model.feature_importances_
+        return importances_df
 
+    # Calculate variable importance
+    importances_df = calculate_variable_importance(X_train, y_train)
+    # Calculate accuracies and confusion matrices
+    accuracies, confusion_matrices = test_model(X_train, X_test, y_train, y_test)
+
+    # Display confusion matrices
     st.write("Affichons les matrices de confusion des différents modèles.")
     st.write("Une matrice de confusion est un moyen de visualiser où notre modèle a bien fonctionné et où il a eu des difficultés. Cela nous aide à comprendre comment un modèle se comporte dans différentes situations.")
-    # Afficher la matrice de confusion pour chaque modèle
     fig, axes = plt.subplots(1, 4, figsize=(18, 4))
-    for ax, (model_name, model_conf_matrix) in zip(axes, zip(class_accuracies.keys(), [confusion_matrix(y_test, model.predict(X_test)) for model in models.values()])):
+    for ax, (model_name, model_conf_matrix) in zip(axes, confusion_matrices.items()):
         ax.set_title(f"Matrice de Confusion pour {model_name}")
         total_per_class = model_conf_matrix.sum(axis=1)
         conf_matrix_percentage = (model_conf_matrix.T / total_per_class).T * 100
         sns.heatmap(conf_matrix_percentage, annot=True, fmt='.2f', cmap='Blues', cbar=False, ax=ax)
         ax.set_xlabel('Valeurs Prédites')
         ax.set_ylabel('Valeurs Réelles')
-
     plt.tight_layout()
     st.pyplot(fig)
-
     st.write("Lors de l\'observation des matrices de confusion pour chaque modèle, il est évident que les classes 0 (Indemnes) et 3 (Tués) posent un défi de prédiction significatif. Les pourcentages associés à ces classes sont notablement bas, suggérant que les modèles ont du mal à les identifier correctement. Cette difficulté peut être attribuée à une représentation limitée de ces classes dans l\'ensemble de données, ce qui rend la généralisation plus complexe.")
     st.write("En revanche, les classes 1 (Blessés Légers) et 2 (Blessés hospitalisés) bénéficient d'une prédiction plus précise, avec des pourcentages plus élevés dans les matrices de confusion. Il semble que la représentation de ces classes soit plus robuste, facilitant ainsi la tâche des modèles.")
+
+    # Display model accuracies
     st.write("En vue de prendre une décision quant au choix du modèle, il est nécessaire d'examiner les précisions de chacun d'entre eux.")
-    # Vos résultats
-    results = {
-        "Random Forest": {"model": "RandomForestClassifier()", "accuracy": 0.5714285714285714},
-        "KNN": {"model": "KNeighborsClassifier()", "accuracy": 0.5748782467532467},
-        "XGBoost": {"model": "XGBClassifier(base_score=None, booster=None, ...)", "accuracy": 0.6288555194805194},
-        "SVM": {"model": "SVC()", "accuracy": 0.6057224025974026},
-    }
-
-    # Créer un DataFrame à partir des résultats
-    df_results = pd.DataFrame.from_dict(results, orient='index')
-    df_results.reset_index(inplace=True)
-    df_results.columns = ['Model', 'Model Details', 'Accuracy']
-
-    # Convertir les objets de la colonne "Model Details" en chaînes de texte
-    df_results['Model Details'] = df_results['Model Details'].astype(str)
-
-    # Afficher le DataFrame dans Streamlit
-    st.dataframe(df_results)
-
-    # Explication sur le choix du modèle XGBoost
+    df_accuracies = pd.DataFrame.from_dict(accuracies, orient='index', columns=['Accuracy']).reset_index()
+    st.dataframe(df_accuracies)
     st.write("Nous optons pour le modèle XGBoost dans notre application en raison de sa précision supérieure parmi les modèles testés. Afin de simplifier l'interprétation et d'accroître la stabilité du modèle, nous allons regrouper certaines classes de gravité. Les classes 'Indemne' et 'Blessé Léger' ont été fusionnées, de même que les classes 'Blessé Hospitalisé' et 'Tué'. Nous explorerons également l'importance de chaque variable dans le modèle sélectionné.")
 
-    # Entraîner le modèle XGBoost
-    xgb_model = models['XGBoost']
-    xgb_model.fit(X_train, y_train.values.ravel())
-
-    # Obtenir les importances des caractéristiques du modèle XGBoost
-    importances_df['XGBoost'] = xgb_model.feature_importances_
-
-    # Afficher les importances des variables pour le modèle choisi (XGBoost)
-    chosen_model_importances = importances_df['XGBoost']
-    # Afficher un graphique à barres pour les importances des variables du modèle choisi (XGBoost)
-    fig1 = px.bar(x=chosen_model_importances.index, y=chosen_model_importances.values, title='Importance des variables explicatives utilisées pour le modèle XGBoost')
+    # Display variable importance
+    st.write("Affichons l'importance des variables pour le modèle XGBoost.")
+    fig1 = px.bar(x=importances_df.index, y=importances_df['XGBoost'], title='Importance des variables explicatives utilisées pour le modèle XGBoost')
     fig1.update_layout(
         plot_bgcolor="rgba(0,0,0,0)",
         xaxis=dict(showgrid=False, title='Caractéristiques'),
@@ -266,65 +239,68 @@ def test_model():
     st.write("Nous notons que les variables 'Dep' (départements français) et 'Catr' (type de route) se démarquent comme les plus cruciales dans notre modèle XGBoost. Nous prévoyons de les maintenir pour la suite de l'analyse.")
     st.write("Nous avons choisi d'utiliser un modèle XGBoost, en raison de sa capacité à traiter des ensembles de données complexes et à fournir des prédictions précises. Après l'entraînement initial, nous allons optimisé les paramètres du modèle pour améliorer sa précision. Pour ce faire, nous allons tester plusieurs combinaisons d'hyperparamètres et conserver celle qui maximise la précision de notre modèle (accuracy)")
 
-# Séparer les features et la variable cible
-#X = data[['region2', 'catr', "homme"]]
-X = data[['dep', 'catr', "homme"]]
-y = data['grav']
 
-# Fusionner les classes 0 et 1 en une seule classe (classe 0)
-# Fusionner les classes 2 et 3 en une seule classe (classe 1)
-y_merged = y.replace({0: 0, 1: 0, 2: 1, 3: 1})
+# Fonction pour fusionner les classes de gravité
+def merge_gravity_classes(y):
+    return y.replace({0: 0, 1: 0, 2: 1, 3: 1})
+# Fonction pour diviser les données et fusionner les classes
+def split_and_merge_data(data):
+    X = data[['dep', 'catr', 'homme']]
+    y = data['grav']
+    y_merged = merge_gravity_classes(y)
+    return train_test_split(X, y_merged, test_size=0.2, random_state=42, stratify=y_merged)
+def split_and_merge_data2(data):
+    X = data[["secuexist", "age", "dep", "lum", "atm", "catr", "trajet", "equipement", "homme"]]
+    y = data['grav']
+    return train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
-# Diviser les données en ensembles d'entraînement et de test avec stratification
-X_train, X_test, y_train, y_test = train_test_split(X, y_merged, test_size=0.2, random_state=42, stratify=y_merged)
+# Fonction pour effectuer une recherche aléatoire des hyperparamètres et retourner le modèle
+def perform_random_search(X_train, y_train):
+    param_dist = {
+        'learning_rate': [0.01, 0.1, 0.2],
+        'n_estimators': [50, 100, 200],
+        'max_depth': [3, 5, 7],
+        'subsample': [0.8, 0.9, 1.0],
+        'colsample_bytree': [0.8, 0.9, 1.0],
+        'gamma': [0, 1, 2],
+        'min_child_weight': [1, 2, 3],
+        'lambda': [0, 1, 2],
+        'alpha': [0, 1, 2]
+    }
+    xgb = XGBClassifier()
+    random_search = RandomizedSearchCV(xgb, param_distributions=param_dist, n_iter=10, scoring='accuracy', cv=3, random_state=42)
+    random_search.fit(X_train, y_train)
+    best_params = random_search.best_params_
+    best_model = random_search.best_estimator_
+    return best_params, best_model
 
-# Définir les hyperparamètres à optimiser
-param_dist = {
-    'learning_rate': [0.01, 0.1, 0.2],
-    'n_estimators': [50, 100, 200],
-    'max_depth': [3, 5, 7],
-    'subsample': [0.8, 0.9, 1.0],
-    'colsample_bytree': [0.8, 0.9, 1.0],
-    'gamma': [0, 1, 2],
-    'min_child_weight': [1, 2, 3],
-    'lambda': [0, 1, 2],
-    'alpha': [0, 1, 2]
-}
+# Fonction pour afficher la matrice de confusion sous forme de heatmap
+def display_confusion_matrix_heatmap(y_test, y_pred):
+    conf_matrix = confusion_matrix(y_test, y_pred)
+    total_per_class = conf_matrix.sum(axis=1)
+    conf_matrix_percentage = (conf_matrix.T / total_per_class).T * 100
+    fig, ax = plt.subplots(figsize=(8, 6))
+    sns.heatmap(conf_matrix_percentage, annot=True, fmt='.2f', cmap='Blues', cbar=False, ax=ax)
+    ax.set_xlabel('Valeurs Prédites')
+    ax.set_ylabel('Valeurs Réelles')
+    plt.title("Matrice de Confusion")
+    st.pyplot(fig)
 
-# Créer le modèle XGBoost
-xgb = XGBClassifier()
+# Application des fonctions
+    
+X_train, X_test, y_train, y_test = split_and_merge_data(data)
+X_train2, X_test2, y_train2, y_test2 = split_and_merge_data2(data)
 
-# Effectuer une recherche aléatoire des hyperparamètres
-random_search = RandomizedSearchCV(xgb, param_distributions=param_dist, n_iter=10, scoring='accuracy', cv=3, random_state=42)
-random_search.fit(X_train, y_train)
+X_train2_no_missing = X_train2.dropna()
+y_train2_no_missing = y_train2.loc[X_train2_no_missing.index]
+X_test2_no_missing = X_test2.dropna()
+y_test2_no_missing = y_test2.loc[X_test2_no_missing.index]
 
-# Afficher les meilleurs hyperparamètres
-best_params = random_search.best_params_
-#st.write("Voici la meilleurs combinaison d'hyperparamètres :", best_params)
-
-# Utiliser le modèle avec les meilleurs hyperparamètres pour prédire sur les données de test
-y_pred = random_search.best_estimator_.predict(X_test)
-
-# Calculer et afficher l'accuracy
+best_params, best_model = perform_random_search(X_train, y_train)
+y_pred = best_model.predict(X_test)
+# Calcul et affichage de l'accuracy
 accuracy = accuracy_score(y_test, y_pred)
-#st.write("Avec cette combinaison d'hyperparamètres, nous obtenons l'accuracy suivante : ")
-#st.write(accuracy)
-#st.write("Nous constatons que la précision de notre modèle XGBoost, une fois optimisée, a augmenté de 10 points par rapport à la version non optimisée. Ainsi, nous atteignons désormais une précision d'environ 73%, ce qui se traduit par la capacité du modèle à correctement classer 73 individus sur 100.")
-#st.write("Afin de confirmer notre choix, intéressons nous à la matrice de confusion :")
 
-# Afficher la matrice de confusion
-conf_matrix = confusion_matrix(y_test, y_pred)
-# Affichage de la matrice de confusion sous forme de heatmap
-total_per_class = conf_matrix.sum(axis=1)
-conf_matrix_percentage = (conf_matrix.T / total_per_class).T * 100
-# Réduire la taille de la figure
-#fig, ax = plt.subplots(figsize=(3, 2))
-#sns.heatmap(conf_matrix_percentage, annot=True, fmt='.2f', cmap='Blues', cbar=False, ax=ax)
-#ax.set_xlabel('Valeurs Prédites')
-#ax.set_ylabel('Valeurs Réelles')
-#st.pyplot(fig)
-#st.write("Le choix de notre modèle s'est avéré judicieux, comme le démontre la matrice de confusion. Cette dernière offre une visualisation claire de la performance du modèle en mettant en évidence un grand nombre de prédictions correctes et un nombre limité d'erreurs de prédiction. Les résultats indiquent une capacité significative du modèle à bien classifier les différentes classes de gravité des accidents de vélo. Nous observons une prépondérance de prédictions précises, illustrant ainsi la robustesse et la fiabilité de notre approche.")
-      
 # Liste des régions françaises métropolitaines
 departements = {
     1: "Ain",
@@ -429,23 +405,20 @@ departements = {
     974: "La Réunion",
     976: "Mayotte"
 }
-
 # Créer une liste des noms de départements
 departement_names = list(departements.values())
-
 # Créer une liste déroulante dans Streamlit avec les noms des départements
 selected_departement_name = st.selectbox("Sélectionnez un département", departement_names)
-
 # Convertir le nom de département en numéro en utilisant la liste departements
-selected_departement_num = [key for key, value in departements.items() if value == selected_departement_name][0]
-
+def get_departement_num(selected_departement_name):
+    return [key for key, value in departements.items() if value == selected_departement_name][0]
 # Section pour la sélection du sexe et de l'âge
 st.header('Sélectionnez votre genre:')
-gender_options = {'1':'Masculin', '0':'Féminin'}
+gender_options = {'1': 'Masculin', '0': 'Féminin'}
 selected_gender_name = st.radio('Choisissez le sexe:', list(gender_options.values()))
+# Convertir le genre en numéro en utilisant le dictionnaire gender_options
 selected_gender_num = [key for key, value in gender_options.items() if value == selected_gender_name][0]
-
-# Liste des régions françaises métropolitaines
+# Liste des types de routes
 st.header('Sélectionnez le type de routes que vous fréquentez le plus:')
 catr_choice = {
     "1": 'Autoroute',
@@ -458,34 +431,20 @@ catr_choice = {
     "9": 'Autre'
 }
 selected_catr_name = st.selectbox('Choisissez le type de route:', list(catr_choice.values()))
+# Convertir le type de route en numéro en utilisant le dictionnaire catr_choice
 selected_catr_num = [key for key, value in catr_choice.items() if value == selected_catr_name][0]
-
-
-@st.cache_data
-def import_data2():
-    data2 = pd.read_csv(r"Base_dep.csv", decimal=".", sep=",")  
-    return data2
-
-data2 = import_data2()
-
-bouton_test = st.button("Résultat avec mes données personnelles")
-
-if bouton_test:
-    st.write('Vous avez choisi la région:', selected_departement_name)
-    st.write('Vous avez choisi le sexe:', selected_gender_name)
-    st.write('Vous avez choisi le type de route:', selected_catr_name)
-
-    # Préparez les données d'entrée en fonction des sélections de l'utilisateur
-    user_input = pd.DataFrame({
-        #"region2": [int(selected_departement_num)],
-        "dep": [int(selected_departement_num)],
+# Fonction pour obtenir les données d'entrée en fonction des sélections de l'utilisateur
+def get_user_input(selected_departement_name, selected_gender_name, selected_catr_name):
+    return pd.DataFrame({
+        "dep": [get_departement_num(selected_departement_name)],
         "catr": [int(selected_catr_num)],
         "homme": [int(selected_gender_num)]
     })
 
-    # Faites une prédiction avec le modèle XGBoost
-    predicted_class = random_search.best_estimator_.predict(user_input)[0]
-
+# Fonction pour prédire et afficher les résultats
+def predict_and_display_results(user_input):
+    predicted_class = best_model.predict(user_input)[0]
+    st.write("En fonction des sélections effectuées, le modèle de machine learning prédit la classe :", predicted_class)
     # Affichez la classe prédite
     st.write("En fonction des sélections effectuées, le modèle de machine learning prédit la classe :", predicted_class)
     if predicted_class == 0 :
@@ -495,8 +454,24 @@ if bouton_test:
 
     st.write("En plus de cela, nous avons quelques autres statistiques selon les caractéristiques inscrites :")
 
+@st.cache_data
+def import_data2():
+    data2 = pd.read_csv(r"Base_dep.csv", decimal=".", sep=",")  
+    return data2
+data2 = import_data2()
+bouton_test = st.button("Résultat avec mes données personnelles")
+
+if bouton_test:
+    st.write('Vous avez choisi la région:', selected_departement_name)
+    st.write('Vous avez choisi le sexe:', selected_gender_name)
+    st.write('Vous avez choisi le type de route:', selected_catr_name)
+
+    # Préparez les données d'entrée en fonction des sélections de l'utilisateur
+    user_input = get_user_input(selected_departement_name, selected_gender_name, selected_catr_name)
+    # Faites une prédiction avec le modèle XGBoost et affichez les résultats
+    predict_and_display_results(user_input)
     # Filtrer les données en fonction des sélections de l'utilisateur
-    filtered_data = data2[(data2['dep'] == int(selected_departement_num)) & (data2['catr'] == int(selected_catr_num)) & (data2['homme'] == int(selected_gender_num))]
+    filtered_data = data2[(data2['dep'] == int(get_departement_num(selected_departement_name))) & (data2['catr'] == int(selected_catr_num)) & (data2['homme'] == int(selected_gender_num))]
 
     if not filtered_data.empty:
         st.write('Dans le cas d\'un accident, vous avez', filtered_data['part_indemne'].iloc[0]*100, '% de chance de rester indemne.')
@@ -529,16 +504,13 @@ if button_clicked:
     st.write("- Homme (sexe) : Genre de l'individu accidenté.")
     st.header("Observons les résultats des différents modèles testés (KNN, SVM, Random Forest et XGBoost)")
     # Display the content of models presentation
-    test_model()
+    model(X_train2_no_missing, y_train2_no_missing, X_test2_no_missing, y_test2_no_missing)
     st.write("Voici la meilleurs combinaison d'hyperparamètres :", best_params)
     st.write("Avec cette combinaison d'hyperparamètres, nous obtenons l'accuracy suivante : ")
     st.write(accuracy)
     st.write("Nous constatons que la précision de notre modèle XGBoost, une fois optimisée, a augmenté de 10 points par rapport à la version non optimisée. Ainsi, nous atteignons désormais une précision d'environ 73%, ce qui se traduit par la capacité du modèle à correctement classer 73 individus sur 100.")
     st.write("Afin de confirmer notre choix, intéressons nous à la matrice de confusion :")
-    fig, ax = plt.subplots(figsize=(3, 2))
-    sns.heatmap(conf_matrix_percentage, annot=True, fmt='.2f', cmap='Blues', cbar=False, ax=ax)
-    ax.set_xlabel('Valeurs Prédites')
-    ax.set_ylabel('Valeurs Réelles')
-    st.pyplot(fig)
+    # Affichage de la matrice de confusion sous forme de heatmap
+    display_confusion_matrix_heatmap(y_test, y_pred)
     st.write("Le choix de notre modèle s'est avéré judicieux, comme le démontre la matrice de confusion. Cette dernière offre une visualisation claire de la performance du modèle en mettant en évidence un grand nombre de prédictions correctes et un nombre limité d'erreurs de prédiction. Les résultats indiquent une capacité significative du modèle à bien classifier les différentes classes de gravité des accidents de vélo. Nous observons une prépondérance de prédictions précises, illustrant ainsi la robustesse et la fiabilité de notre approche.")
         
