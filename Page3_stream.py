@@ -431,16 +431,16 @@ def display_confusion_matrix_heatmap(y_test, y_pred):
     st.pyplot(fig)
 
 # Application des fonctions
+X_train, X_test, y_train, y_test = split_and_merge_data(data)
 @st.cache_data
 def fonction():
-    X_train, X_test, y_train, y_test = split_and_merge_data(data)
     best_params, best_model = perform_random_search(X_train, y_train)
     y_pred = best_model.predict(X_test)
     # Calcul et affichage de l'accuracy
     accuracy = accuracy_score(y_test, y_pred)
-    return best_model, best_params, accuracy
+    return best_model, best_params, accuracy, y_pred
 
-best_model, best_params, accuracy = fonction()
+best_model, best_params, accuracy, y_pred = fonction()
 
 # Fonction pour prédire et afficher les résultats
 def predict_and_display_results(user_input):
