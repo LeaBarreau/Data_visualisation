@@ -239,68 +239,6 @@ def model(X_train, y_train, X_test, y_test):
     st.write("Nous notons que les variables 'Dep' (départements français) et 'Catr' (type de route) se démarquent comme les plus cruciales dans notre modèle XGBoost. Nous prévoyons de les maintenir pour la suite de l'analyse.")
     st.write("Nous avons choisi d'utiliser un modèle XGBoost, en raison de sa capacité à traiter des ensembles de données complexes et à fournir des prédictions précises. Après l'entraînement initial, nous allons optimisé les paramètres du modèle pour améliorer sa précision. Pour ce faire, nous allons tester plusieurs combinaisons d'hyperparamètres et conserver celle qui maximise la précision de notre modèle (accuracy)")
 
-
-# Fonction pour fusionner les classes de gravité
-def merge_gravity_classes(y):
-    return y.replace({0: 0, 1: 0, 2: 1, 3: 1})
-# Fonction pour diviser les données et fusionner les classes
-def split_and_merge_data(data):
-    X = data[['dep', 'catr', 'homme']]
-    y = data['grav']
-    y_merged = merge_gravity_classes(y)
-    return train_test_split(X, y_merged, test_size=0.2, random_state=42, stratify=y_merged)
-def split_and_merge_data2(data):
-    X = data[["secuexist", "age", "dep", "lum", "atm", "catr", "trajet", "equipement", "homme"]]
-    y = data['grav']
-    return train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
-
-# Fonction pour effectuer une recherche aléatoire des hyperparamètres et retourner le modèle
-def perform_random_search(X_train, y_train):
-    param_dist = {
-        'learning_rate': [0.01, 0.1, 0.2],
-        'n_estimators': [50, 100, 200],
-        'max_depth': [3, 5, 7],
-        'subsample': [0.8, 0.9, 1.0],
-        'colsample_bytree': [0.8, 0.9, 1.0],
-        'gamma': [0, 1, 2],
-        'min_child_weight': [1, 2, 3],
-        'lambda': [0, 1, 2],
-        'alpha': [0, 1, 2]
-    }
-    xgb = XGBClassifier()
-    random_search = RandomizedSearchCV(xgb, param_distributions=param_dist, n_iter=10, scoring='accuracy', cv=3, random_state=42)
-    random_search.fit(X_train, y_train)
-    best_params = random_search.best_params_
-    best_model = random_search.best_estimator_
-    return best_params, best_model
-
-# Fonction pour afficher la matrice de confusion sous forme de heatmap
-def display_confusion_matrix_heatmap(y_test, y_pred):
-    conf_matrix = confusion_matrix(y_test, y_pred)
-    total_per_class = conf_matrix.sum(axis=1)
-    conf_matrix_percentage = (conf_matrix.T / total_per_class).T * 100
-    fig, ax = plt.subplots(figsize=(8, 6))
-    sns.heatmap(conf_matrix_percentage, annot=True, fmt='.2f', cmap='Blues', cbar=False, ax=ax)
-    ax.set_xlabel('Valeurs Prédites')
-    ax.set_ylabel('Valeurs Réelles')
-    plt.title("Matrice de Confusion")
-    st.pyplot(fig)
-
-# Application des fonctions
-    
-X_train, X_test, y_train, y_test = split_and_merge_data(data)
-X_train2, X_test2, y_train2, y_test2 = split_and_merge_data2(data)
-
-X_train2_no_missing = X_train2.dropna()
-y_train2_no_missing = y_train2.loc[X_train2_no_missing.index]
-X_test2_no_missing = X_test2.dropna()
-y_test2_no_missing = y_test2.loc[X_test2_no_missing.index]
-
-best_params, best_model = perform_random_search(X_train, y_train)
-y_pred = best_model.predict(X_test)
-# Calcul et affichage de l'accuracy
-accuracy = accuracy_score(y_test, y_pred)
-
 # Liste des régions françaises métropolitaines
 departements = {
     1: "Ain",
@@ -441,6 +379,69 @@ def get_user_input(selected_departement_name, selected_gender_name, selected_cat
         "homme": [int(selected_gender_num)]
     })
 
+# Fonction pour fusionner les classes de gravité
+@st.cache_data
+def merge_gravity_classes(y):
+    return y.replace({0: 0, 1: 0, 2: 1, 3: 1})
+# Fonction pour diviser les données et fusionner les classes
+@st.cache_data
+def split_and_merge_data(data):
+    X = data[['dep', 'catr', 'homme']]
+    y = data['grav']
+    y_merged = merge_gravity_classes(y)
+    return train_test_split(X, y_merged, test_size=0.2, random_state=42, stratify=y_merged)
+@st.cache_data
+def split_and_merge_data2(data):
+    X = data[["secuexist", "age", "dep", "lum", "atm", "catr", "trajet", "equipement", "homme"]]
+    y = data['grav']
+    return train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+# Fonction pour effectuer une recherche aléatoire des hyperparamètres et retourner le modèle
+@st.cache_data
+def perform_random_search(X_train, y_train):
+    param_dist = {
+        'learning_rate': [0.01, 0.1, 0.2],
+        'n_estimators': [50, 100, 200],
+        'max_depth': [3, 5, 7],
+        'subsample': [0.8, 0.9, 1.0],
+        'colsample_bytree': [0.8, 0.9, 1.0],
+        'gamma': [0, 1, 2],
+        'min_child_weight': [1, 2, 3],
+        'lambda': [0, 1, 2],
+        'alpha': [0, 1, 2]
+    }
+    xgb = XGBClassifier()
+    random_search = RandomizedSearchCV(xgb, param_distributions=param_dist, n_iter=10, scoring='accuracy', cv=3, random_state=42)
+    random_search.fit(X_train, y_train)
+    best_params = random_search.best_params_
+    best_model = random_search.best_estimator_
+    return best_params, best_model
+
+# Fonction pour afficher la matrice de confusion sous forme de heatmap
+@st.cache_data
+def display_confusion_matrix_heatmap(y_test, y_pred):
+    conf_matrix = confusion_matrix(y_test, y_pred)
+    total_per_class = conf_matrix.sum(axis=1)
+    conf_matrix_percentage = (conf_matrix.T / total_per_class).T * 100
+    fig, ax = plt.subplots(figsize=(8, 6))
+    sns.heatmap(conf_matrix_percentage, annot=True, fmt='.2f', cmap='Blues', cbar=False, ax=ax)
+    ax.set_xlabel('Valeurs Prédites')
+    ax.set_ylabel('Valeurs Réelles')
+    plt.title("Matrice de Confusion")
+    st.pyplot(fig)
+
+# Application des fonctions
+@st.cache_data
+def fonction():
+    X_train, X_test, y_train, y_test = split_and_merge_data(data)
+    best_params, best_model = perform_random_search(X_train, y_train)
+    y_pred = best_model.predict(X_test)
+    # Calcul et affichage de l'accuracy
+    accuracy = accuracy_score(y_test, y_pred)
+    return best_model, best_params, accuracy
+
+best_model, best_params, accuracy = fonction()
+
 # Fonction pour prédire et afficher les résultats
 def predict_and_display_results(user_input):
     predicted_class = best_model.predict(user_input)[0]
@@ -500,6 +501,11 @@ st.write("- Équipement (equipement) : Les équipements spécifiques utilisés l
 st.write("- Homme (sexe) : Genre de l'individu accidenté.")
 st.subheader("Observons les résultats des différents modèles testés (KNN, SVM, Random Forest et XGBoost)")
 # Display the content of models presentation
+X_train2, X_test2, y_train2, y_test2 = split_and_merge_data2(data)
+X_train2_no_missing = X_train2.dropna()
+y_train2_no_missing = y_train2.loc[X_train2_no_missing.index]
+X_test2_no_missing = X_test2.dropna()
+y_test2_no_missing = y_test2.loc[X_test2_no_missing.index]
 model(X_train2_no_missing, y_train2_no_missing, X_test2_no_missing, y_test2_no_missing)
 st.write("Voici la meilleurs combinaison d'hyperparamètres :", best_params)
 st.write("Avec cette combinaison d'hyperparamètres, nous obtenons l'accuracy suivante : ")
