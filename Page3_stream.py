@@ -446,8 +446,6 @@ best_model, best_params, accuracy, y_pred = fonction()
 def predict_and_display_results(user_input):
     predicted_class = best_model.predict(user_input)[0]
     st.write("En fonction des sélections effectuées, le modèle de machine learning prédit la classe :", predicted_class)
-    # Affichez la classe prédite
-    st.write("En fonction des sélections effectuées, le modèle de machine learning prédit la classe :", predicted_class)
     if predicted_class == 0 :
         st.write("En d'autres termes, selon vos caractéristiques, notre modèle de machine learning prédit la classe 0. Cela signifie qu'en cas d'accident, il prévoit que vous resterez indemne ou vous serez blessé légèrement. Restez prudent ! ")
     else :
