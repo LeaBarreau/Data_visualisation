@@ -482,35 +482,31 @@ if bouton_test:
         st.write("Aucune donnée supplémentaire, nous sommes désolées :)")
 
 # Ajoutez un espace dans la barre latérale
-st.sidebar.write("Et pour les curieux :")
-
-# Bouton dans la barre latérale
-button_clicked = st.sidebar.button("Découvrez et comprenez notre modèle")
+st.title("Et pour les curieux : découvrez et comprenez nos modèles")
 
 # Si le bouton est cliqué, affichez le contenu de la page spécifique
-if button_clicked:
-    st.title("Comprenons ensemble le modèle utilisé et l'optimisation de celui-ci !")
-    st.header("Objectif du Modèle : ")
-    st.write("Le modèle que nous avons développé a pour objectif de prédire la gravité des accidents de vélo en se basant sur divers facteurs. La gravité des accidents est classée en quatre catégories : indemne, blessé léger, blessé hospitalisé, et tué. Comprendre la gravité des accidents passés peut nous aider à identifier les principaux contributeurs aux incidents graves, ce qui à son tour peut informer des mesures de sécurité ciblées pour réduire les risques futurs sur nos routes.")
-    st.header("Variables Utilisées : ")
-    st.write(" - Securité Existante (secuexist) : Représente les équipements de sécurité portés par les individus impliqués dans l'accident (casque, ceinture, etc.).")
-    st.write("- Âge (age) : L'âge des personnes impliquées dans l'accident.")
-    st.write("- Région (region) : La région géographique où l'accident s'est produit. Chaque région a ses propres caractéristiques et défis en matière de sécurité routière.")
-    st.write("- Luminosité (lum) : Les conditions d'éclairage au moment de l'accident.")
-    st.write("- Atmosphère (atm) : Les conditions atmosphériques au moment de l'accident.")
-    st.write("- Type de Route (catr) : La catégorie de route où l'accident s'est produit.")
-    st.write("- Type de Trajet (trajet) : Le type de trajet effectué par les individus (domicile-travail, domicile-école, etc.).")
-    st.write("- Équipement (equipement) : Les équipements spécifiques utilisés lors de l'accident.")
-    st.write("- Homme (sexe) : Genre de l'individu accidenté.")
-    st.header("Observons les résultats des différents modèles testés (KNN, SVM, Random Forest et XGBoost)")
-    # Display the content of models presentation
-    model(X_train2_no_missing, y_train2_no_missing, X_test2_no_missing, y_test2_no_missing)
-    st.write("Voici la meilleurs combinaison d'hyperparamètres :", best_params)
-    st.write("Avec cette combinaison d'hyperparamètres, nous obtenons l'accuracy suivante : ")
-    st.write(accuracy)
-    st.write("Nous constatons que la précision de notre modèle XGBoost, une fois optimisée, a augmenté de 10 points par rapport à la version non optimisée. Ainsi, nous atteignons désormais une précision d'environ 73%, ce qui se traduit par la capacité du modèle à correctement classer 73 individus sur 100.")
-    st.write("Afin de confirmer notre choix, intéressons nous à la matrice de confusion :")
-    # Affichage de la matrice de confusion sous forme de heatmap
-    display_confusion_matrix_heatmap(y_test, y_pred)
-    st.write("Le choix de notre modèle s'est avéré judicieux, comme le démontre la matrice de confusion. Cette dernière offre une visualisation claire de la performance du modèle en mettant en évidence un grand nombre de prédictions correctes et un nombre limité d'erreurs de prédiction. Les résultats indiquent une capacité significative du modèle à bien classifier les différentes classes de gravité des accidents de vélo. Nous observons une prépondérance de prédictions précises, illustrant ainsi la robustesse et la fiabilité de notre approche.")
-        
+st.header("Comprenons ensemble le modèle utilisé et l'optimisation de celui-ci !")
+st.subheader("Objectif du Modèle : ")
+st.write("Le modèle que nous avons développé a pour objectif de prédire la gravité des accidents de vélo en se basant sur divers facteurs. La gravité des accidents est classée en quatre catégories : indemne, blessé léger, blessé hospitalisé, et tué. Comprendre la gravité des accidents passés peut nous aider à identifier les principaux contributeurs aux incidents graves, ce qui à son tour peut informer des mesures de sécurité ciblées pour réduire les risques futurs sur nos routes.")
+st.subheader("Variables Utilisées : ")
+st.write(" - Securité Existante (secuexist) : Représente les équipements de sécurité portés par les individus impliqués dans l'accident (casque, ceinture, etc.).")
+st.write("- Âge (age) : L'âge des personnes impliquées dans l'accident.")
+st.write("- Région (region) : La région géographique où l'accident s'est produit. Chaque région a ses propres caractéristiques et défis en matière de sécurité routière.")
+st.write("- Luminosité (lum) : Les conditions d'éclairage au moment de l'accident.")
+st.write("- Atmosphère (atm) : Les conditions atmosphériques au moment de l'accident.")
+st.write("- Type de Route (catr) : La catégorie de route où l'accident s'est produit.")
+st.write("- Type de Trajet (trajet) : Le type de trajet effectué par les individus (domicile-travail, domicile-école, etc.).")
+st.write("- Équipement (equipement) : Les équipements spécifiques utilisés lors de l'accident.")
+st.write("- Homme (sexe) : Genre de l'individu accidenté.")
+st.subheader("Observons les résultats des différents modèles testés (KNN, SVM, Random Forest et XGBoost)")
+# Display the content of models presentation
+model(X_train2_no_missing, y_train2_no_missing, X_test2_no_missing, y_test2_no_missing)
+st.write("Voici la meilleurs combinaison d'hyperparamètres :", best_params)
+st.write("Avec cette combinaison d'hyperparamètres, nous obtenons l'accuracy suivante : ")
+st.write(accuracy)
+st.write("Nous constatons que la précision de notre modèle XGBoost, une fois optimisée, a augmenté de 10 points par rapport à la version non optimisée. Ainsi, nous atteignons désormais une précision d'environ 73%, ce qui se traduit par la capacité du modèle à correctement classer 73 individus sur 100.")
+st.write("Afin de confirmer notre choix, intéressons nous à la matrice de confusion :")
+# Affichage de la matrice de confusion sous forme de heatmap
+display_confusion_matrix_heatmap(y_test, y_pred)
+st.write("Le choix de notre modèle s'est avéré judicieux, comme le démontre la matrice de confusion. Cette dernière offre une visualisation claire de la performance du modèle en mettant en évidence un grand nombre de prédictions correctes et un nombre limité d'erreurs de prédiction. Les résultats indiquent une capacité significative du modèle à bien classifier les différentes classes de gravité des accidents de vélo. Nous observons une prépondérance de prédictions précises, illustrant ainsi la robustesse et la fiabilité de notre approche.")
+    
